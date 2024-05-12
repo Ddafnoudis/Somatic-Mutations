@@ -1,0 +1,19 @@
+# Seed for reproducibility
+SEED: 42
+# Data path
+WORK_DIR: '/data_scripts/Somatic-Mutations/'
+DATASET: 'datasets/full_data.tsv'
+OUTPUT_DIR: 'result_files/'
+# Correlation matrix cramers_v
+CORR_IMAGE: 'result_files/categorical_correlation.png'
+CORR_RESULTS: 'result_files/correlation_results.txt'
+# Feature Selection
+ANOVA: 'result_files/ANOVA_F_value_feature_importance.png'
+MIT: 'result_files/mutual_info_class.png'
+# Lazy predict results
+LZP_RESULTS: 'result_files/lzp_results.tsv'
+# Random Forest results
+CROSS_VAL: 'result_files/cv_score.txt'
+ACCURACY: 'result_files/accuracy.txt'
+REPORT_RF: 'result_files/class_report.txt'
+CONFUSION_MTX: 'result_files/confusion_mtx.txt'
