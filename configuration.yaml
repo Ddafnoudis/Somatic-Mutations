@@ -17,3 +17,5 @@ CROSS_VAL: 'result_files/cv_score.txt'
 ACCURACY: 'result_files/accuracy.txt'
 REPORT_RF: 'result_files/class_report.txt'
 CONFUSION_MTX: 'result_files/confusion_mtx.txt'
+# Multilayer Perceptron
+MLP_RESULTS: 'result_files/mlp_folder/validation_results.txt'
