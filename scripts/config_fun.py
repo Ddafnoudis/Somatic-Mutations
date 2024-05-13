@@ -27,6 +27,7 @@ def parse_configuration_files(fname) -> Dict[int, str]:
     config['ACCURACY'] = Path(config['ACCURACY'])
     config['REPORT_RF'] = Path(config['REPORT_RF'])
     config['CONFUSION_MTX'] = Path(config['CONFUSION_MTX'])
+    config["MLP_RESULTS"] = Path(config["MLP_RESULTS"])
 
     return config
 

@@ -9,7 +9,7 @@ from scripts.mlp_nn import multilayer_perceptron, validate_multilayer_perceptron
 from scripts.random_forest import random_forest_train_test_validation 
 from scripts.feature_selection import anova_f_value, mutual_info_class
 from scripts.encoding import over_sampling_encode_data, stratified_k_fold
-
+from scripts_gene_analysis.gene_list import gene_list_
 
 
 def condition_statement(working_dir: Path, output_dir: Path,
@@ -18,7 +18,8 @@ def condition_statement(working_dir: Path, output_dir: Path,
                         anova: Path, mit: Path, 
                         lzp_results: Path, cross_val: Path, 
                         accuracy: Path, report_rf: Path, 
-                        confusion_mtx: Path, seed: int):
+                        confusion_mtx: Path, seed: int,
+                        mlp_results: Path):
     """
     Create conditions statements for the presence of the
     results files you need to have in the result_files/
@@ -71,9 +72,16 @@ def condition_statement(working_dir: Path, output_dir: Path,
         random_forest_train_test_validation(feat_dl=features, tar_dl=target, target_classes_dl=target_classes, seed=seed)
 
     # Multilayer Perceptron (Sequential)
-    sequential_model, X_val_dl, y_val_dl, y_val_dl_reshaped, target_classes_dl = multilayer_perceptron(feat_dl=features, tar_dl=target, target_classes_dl=target_classes, seed=seed)
-    validate_multilayer_perceptron(X_val_dl=X_val_dl, y_val_dl=y_val_dl, y_val_dl_reshaped=y_val_dl_reshaped, 
-                                   sequential_model=sequential_model, target_classes_dl=target_classes)
+    if mlp_results.exists():
+        print("Multilayer Result exist!")
+    else:
+        sequential_model, X_val_dl, y_val_dl, y_val_dl_reshaped, target_classes_dl = multilayer_perceptron(feat_dl=features, tar_dl=target, target_classes_dl=target_classes, seed=seed)
+        validate_multilayer_perceptron(X_val_dl=X_val_dl, y_val_dl=y_val_dl, y_val_dl_reshaped=y_val_dl_reshaped, 
+                                       sequential_model=sequential_model, target_classes_dl=target_classes)
+
+    gene_list_(df = full_data)
+    
+
 
 
 if __name__ == "__main__":
