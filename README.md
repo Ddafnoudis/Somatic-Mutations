@@ -1,4 +1,4 @@
-# Project: Interpretative analysis of human somatic mutations in Acute Myeloid Leukemia Leveraging feature selection and AI for enhanced diagnostic precision_comments
+# Project: Interpretative analysis of human somatic mutations in Acute Myeloid Leukemia. 
 
 ## Introduction
 This project is separated in two sections:
