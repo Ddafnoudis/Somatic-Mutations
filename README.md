@@ -23,6 +23,8 @@ Python 3.12.3
 - session-info=1.0.0
 - tensorflow=2.16.1
 
+## Install requirements
+pip install -r requirements.txt
 
 ## R version
 R 4.2.3
