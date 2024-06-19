@@ -24,7 +24,7 @@ Python 3.12.3
 - tensorflow=2.16.1
 
 ## Install requirements
-pip install -r requirements.txt
+- pip install -r requirements.txt
 
 ## R version
 R 4.2.3
