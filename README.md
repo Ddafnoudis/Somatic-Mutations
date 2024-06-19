@@ -24,3 +24,8 @@ Python 3.12.3
 - tensorflow=2.16.1
 
 
+## R version
+4.2.3
+
+-maftools=2.14.0
+
