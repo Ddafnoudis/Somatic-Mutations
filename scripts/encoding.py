@@ -17,7 +17,7 @@ def over_sampling_encode_data(feat, tar, seed):
    # Oversampling
     ros = RandomOverSampler(random_state=seed)
     features, target = ros.fit_resample(feat, tar)
-    features = features.astype(str)
+    features = feat.astype(str)
     # Ordinal encoding
     ordinal_encoder = OrdinalEncoder()
     # Define columns
@@ -28,7 +28,7 @@ def over_sampling_encode_data(feat, tar, seed):
     # Create the label encoder
     label_enc = LabelEncoder()
     # Encode target
-    target_enc = label_enc.fit_transform(target)
+    target_enc = label_enc.fit_transform(tar)
     # Tranform target into Dataframe
     target_enc_df = pd.DataFrame(target_enc, columns=["Disease_Type"])
     # Concatenate encoded features and target

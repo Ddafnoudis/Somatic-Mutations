@@ -9,7 +9,6 @@ from scripts.mlp_nn import multilayer_perceptron, validate_multilayer_perceptron
 from scripts.random_forest import random_forest_train_test_validation 
 from scripts.feature_selection import anova_f_value, mutual_info_class
 from scripts.encoding import over_sampling_encode_data, stratified_k_fold
-from scripts_gene_analysis.gene_list import gene_list_
 
 
 def condition_statement(working_dir: Path, output_dir: Path,
@@ -25,8 +24,8 @@ def condition_statement(working_dir: Path, output_dir: Path,
     results files you need to have in the result_files/
     folder
     """
-    
     full_data = clean_dataframes()
+    # Find genes that are abundant in the 3 cancer types
     # Cramer_v for finding the correlation between features
     if corr_image.exists() and corr_results.exists():
         print(f"Correlation has been completed already. Location: {output_dir}/\n")
@@ -63,13 +62,16 @@ def condition_statement(working_dir: Path, output_dir: Path,
     if lzp_results.exists():
         print(f"Lazy predict has done its predictions! Location: {output_dir}/\n")
     else:
-        lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test = y_test)
+        lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test)
 
     if report_rf.exists():
         print(f"Random Forest has been completed. Location: {output_dir}/\n")
     else:
         print("Starting Random Forest")
-        random_forest_train_test_validation(feat_dl=features, tar_dl=target, target_classes_dl=target_classes, seed=seed)
+        random_forest_train_test_validation(X_train=X_train, y_train=y_train,
+                                            X_test=X_test, y_test=y_test, 
+                                            X_val=X_val, y_val=y_val, 
+                                            target_classes=target_classes, seed=seed)
 
     # Multilayer Perceptron (Sequential)
     if mlp_results.exists():
@@ -78,10 +80,6 @@ def condition_statement(working_dir: Path, output_dir: Path,
         sequential_model, X_val_dl, y_val_dl, y_val_dl_reshaped, target_classes_dl = multilayer_perceptron(feat_dl=features, tar_dl=target, target_classes_dl=target_classes, seed=seed)
         validate_multilayer_perceptron(X_val_dl=X_val_dl, y_val_dl=y_val_dl, y_val_dl_reshaped=y_val_dl_reshaped, 
                                        sequential_model=sequential_model, target_classes_dl=target_classes)
-
-    gene_list_(df = full_data)
-    
-
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 """
 Develop a Multilayer Perceptron for classification task 
 """
+import os
 import keras
 import numpy as np
 import pandas as pd
@@ -28,6 +29,7 @@ def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
 
     # One hot encoding
     feat_dl = pd.get_dummies(feat_dl, drop_first=True, dtype=int)
+    print(feat_dl.shape)
     # Label Encoding
     lb = LabelEncoder()
     tar_dl_enc = lb.fit_transform(tar_dl)
@@ -56,16 +58,16 @@ def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
     # Depine the dropout rate
     dropout_rate = 0.4
     # Define the epochs
-    epochs = 1
+    epochs = 30
     # Define the batch_size
     batch_size = 100
     # Define the Neural Network structure using layers and dropout rate
     sequential_model = keras.Sequential(
         [
         layers.Input(shape=(feature_size, )),
-        layers.Dense(128, activation="relu"),
+        layers.Dense(16, activation="relu"),
         layers.Dropout(dropout_rate),  
-        layers.Dense(200, activation="relu"),
+        layers.Dense(32, activation="relu"),
         layers.Dropout(dropout_rate),
         layers.Dense(3, activation="softmax")
         ]
@@ -165,7 +167,10 @@ def validate_multilayer_perceptron(X_val_dl, y_val_dl, y_val_dl_reshaped, sequen
     print("Classification Report:\n", val_classification_report, '\n')
 
     # Save performance metrics to a text file
-    with open("result_files/mlp_folder/validation_results.txt", "w") as file:
+    # if folder doesn't exist makedir 
+    if not os.path.exists("result_files/mlp_folder"):
+        os.makedirs("result_files/mlp_folder")
+    with open("result_files/mlp_folder/validation_results.txt", "w", encoding="utf-8") as file:
         file.write("Validation Accuracy: {}\n\n".format(val_accuracy))
         file.write("Confusion Matrix:\n{}\n\n".format(val_confusion_matrix))
         file.write("Classification Report:\n{}\n".format(val_classification_report))
