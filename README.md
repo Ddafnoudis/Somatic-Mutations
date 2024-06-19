@@ -27,5 +27,6 @@ Python 3.12.3
 ## R version
 R 4.2.3
 
--maftools=2.14.0
+## Requirments
+- maftools=2.14.0
 
