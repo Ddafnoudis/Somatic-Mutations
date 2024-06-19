@@ -10,7 +10,7 @@ The second section includes the development of Machine Learning and Deep learnin
 ## Python version
 Python 3.12.3
 
-## Requirments
+## Requirements
 - lazypredict=0.2.12 
 - matplotlib=3.8.4
 - numpy=1.26.4
@@ -27,6 +27,6 @@ Python 3.12.3
 ## R version
 R 4.2.3
 
-## Requirments
+## Requirements
 - maftools=2.14.0
 
