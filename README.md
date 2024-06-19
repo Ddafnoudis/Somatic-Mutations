@@ -7,6 +7,9 @@ The first section provides an analysis of somatic variants using datasets from c
 
 The second section includes the development of Machine Learning and Deep learning models for the purpose of leukemia cancer types classification.
 
+## Data source
+- [cBioPortal](https://www.cbioportal.org/datasets)
+
 ## Python version
 Python 3.12.3
 
@@ -23,12 +26,13 @@ Python 3.12.3
 - session-info=1.0.0
 - tensorflow=2.16.1
 
-## Install requirements
-- pip install -r requirements.txt
-
 ## R version
 R 4.2.3
 
 ## Requirements
 - maftools=2.14.0
+
+## Install requirements
+```bash
+pip install -r requirements.txt
 
