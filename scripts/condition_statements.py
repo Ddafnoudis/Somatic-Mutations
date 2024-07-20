@@ -52,7 +52,7 @@ def condition_statement(working_dir: Path, output_dir: Path,
     target_classes = target.unique().tolist()
     # Oversampling minor classes
     data, features_enc, target_enc = ordinal_encode_data(feat=features, tar=target, seed=seed)
-    print(f"The shape of the data after oversampling is:\n{data.shape}")
+    print(f"The shape of the data after ordinal enocding is:\n{data.shape}")
 
     # Train-test-validation stratified k-fold split
     X_train, X_test, X_val, y_train, y_test, y_val = stratified_k_fold(feat_enc=features_enc, tar_enc=target_enc, seed=seed)
