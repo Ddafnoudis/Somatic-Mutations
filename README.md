@@ -5,7 +5,7 @@ This project is separated in two sections:
 
 The first section provides an analysis of somatic variants using datasets from cBioportal. The Mutation Annotation Format (MAF) file allows us to use tools such as maftools to summarize and visualize the mutations of leukemia.
 
-The second section includes the development of Machine Learning and Deep learning models for the purpose of leukemia cancer types classification.
+The second section includes the development of Machine Learning and Deep learning models for the classification of leukemia somatic mutations.
 
 ## Data source
 - [cBioPortal](https://www.cbioportal.org/datasets)
