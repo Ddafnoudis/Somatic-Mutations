@@ -56,7 +56,7 @@ def correlation(full_data: DataFrame):
         plt.xlabel('Features')
         plt.ylabel('Features')
         plt.savefig('result_files/categorical_correlation.png')
-        plt.show()
+        # plt.show()
 
     plot_categorical_correlation(categorical_corr_matrix)
 

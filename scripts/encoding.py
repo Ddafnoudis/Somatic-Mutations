@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import RandomOverSampler
 
 
-def over_sampling_encode_data(feat, tar, seed):
+def ordinal_encode_data(feat, tar, seed):
     """
     Over sample the minor classes and encode data
     """
@@ -50,5 +50,5 @@ def stratified_k_fold(feat_enc, tar_enc, seed):
 
 
 if __name__ == "__main__":
-    over_sampling_encode_data()
+    ordinal_encode_data()
     stratified_k_fold()

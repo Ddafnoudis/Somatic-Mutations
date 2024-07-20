@@ -1,6 +1,7 @@
 """
 Condition statements
 """
+import os
 from pathlib import Path
 from scripts.correlation import correlation
 from scripts.lazy_predict import lazy_predict
@@ -8,7 +9,7 @@ from scripts.cleaning_datasets import clean_dataframes
 from scripts.mlp_nn import multilayer_perceptron, validate_multilayer_perceptron
 from scripts.random_forest import random_forest_train_test_validation 
 from scripts.feature_selection import anova_f_value, mutual_info_class
-from scripts.encoding import over_sampling_encode_data, stratified_k_fold
+from scripts.encoding import ordinal_encode_data, stratified_k_fold
 
 
 def condition_statement(working_dir: Path, output_dir: Path,
@@ -25,6 +26,11 @@ def condition_statement(working_dir: Path, output_dir: Path,
     folder
     """
     full_data = clean_dataframes()
+    # Output dir
+    if not output_dir.exists():
+        os.mkdir(output_dir)
+    else:
+        print(f"The {output_dir} exists!")
     # Cramer_v for finding the correlation between features
     if corr_image.exists() and corr_results.exists():
         print(f"Correlation has been completed already. Location: {output_dir}/\n")
@@ -45,7 +51,7 @@ def condition_statement(working_dir: Path, output_dir: Path,
     target = full_data["Disease_Type"]
     target_classes = target.unique().tolist()
     # Oversampling minor classes
-    data, features_enc, target_enc = over_sampling_encode_data(feat=features, tar=target, seed=seed)
+    data, features_enc, target_enc = ordinal_encode_data(feat=features, tar=target, seed=seed)
     print(f"The shape of the data after oversampling is:\n{data.shape}")
 
     # Train-test-validation stratified k-fold split
@@ -61,6 +67,7 @@ def condition_statement(working_dir: Path, output_dir: Path,
     if lzp_results.exists():
         print(f"Lazy predict has done its predictions! Location: {output_dir}/\n")
     else:
+        print("Start Lazy Predict classification!")
         lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test)
 
     if report_rf.exists():

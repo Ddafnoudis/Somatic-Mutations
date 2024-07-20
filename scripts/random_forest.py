@@ -60,7 +60,7 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
                 x=target_classes,
                 y=target_classes)
     fig.update_xaxes(side="top")
-    fig.show()
+    # fig.show()
 
     # Save the results
     np.savetxt('result_files/cv_score.txt', cv_score)
@@ -134,7 +134,7 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
         )
     )
 
-    fig.show()
+    # fig.show()
 
     return cv_score, accuracy, report, cm, accuracy_val, report_val, cm_val
 

@@ -38,7 +38,7 @@ def anova_f_value(X_train, X_test, y_train):
     plt.ylim(0.0, 1)
     plt.tight_layout()  # Adjust layout to prevent clipping of labels
     plt.savefig("result_files/ANOVA_F_value_feature_importance.png")  # Save figure to file
-    plt.show()
+    # plt.show()
 
 
 def mutual_info_class(X_train, X_test, y_train):
@@ -59,7 +59,7 @@ def mutual_info_class(X_train, X_test, y_train):
     plt.title("Mutual information between predictors and target")
     plt.xticks(rotation=60, ha='right')
     plt.savefig("result_files/mutual_info_class.png")
-    plt.show()
+    # plt.show()
     
     return X_train, X_test, y_train
 
