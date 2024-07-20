@@ -25,7 +25,6 @@ def condition_statement(working_dir: Path, output_dir: Path,
     folder
     """
     full_data = clean_dataframes()
-    # Find genes that are abundant in the 3 cancer types
     # Cramer_v for finding the correlation between features
     if corr_image.exists() and corr_results.exists():
         print(f"Correlation has been completed already. Location: {output_dir}/\n")

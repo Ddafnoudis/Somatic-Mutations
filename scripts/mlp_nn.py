@@ -2,6 +2,7 @@
 Develop a Multilayer Perceptron for classification task 
 """
 import os
+import sys
 import keras
 import numpy as np
 import pandas as pd
@@ -10,26 +11,23 @@ from sklearn.utils import shuffle
 import plotly.graph_objects as go
 from keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import classification_report
-from sklearn.metrics import balanced_accuracy_score
-from sklearn.model_selection import StratifiedKFold
-from imblearn.over_sampling import RandomOverSampler
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.metrics import accuracy_score, confusion_matrix, balanced_accuracy_score, classification_report
+
+
+if not sys.stdout.encoding == 'UTF-8':
+    sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf8', buffering=1)
 
 
 def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
     """
     Classification process using Multilayer Perceptron
     """
-    # Random Over Sample
-    ros = RandomOverSampler(random_state=seed)
-    feat_dl, tar_dl = ros.fit_resample(feat_dl, tar_dl)
     feat_dl = feat_dl.astype(str)
 
     # One hot encoding
     feat_dl = pd.get_dummies(feat_dl, drop_first=True, dtype=int)
-    print(feat_dl.shape)
+    print(f"Feature shape for MLP training: {feat_dl.shape}")
     # Label Encoding
     lb = LabelEncoder()
     tar_dl_enc = lb.fit_transform(tar_dl)
@@ -55,12 +53,14 @@ def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
     y_val_dl_reshaped = to_categorical(y_val_dl, num_classes)
     # Define the the size of the features
     feature_size = len(feat_dl.columns)
+
     # Depine the dropout rate
     dropout_rate = 0.4
     # Define the epochs
     epochs = 30
     # Define the batch_size
     batch_size = 100
+    
     # Define the Neural Network structure using layers and dropout rate
     sequential_model = keras.Sequential(
         [
@@ -110,6 +110,7 @@ def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
 
     # Print accuracy, confusion matrix, classification report
     print("Accuracy:", accuracy_score(y_test_dl, y_pred), '\n')
+    print("Balanced Accuracy", balanced_accuracy_score(y_test_dl, y_pred), '\n')
     print("Confusion Matrix:\n", confusion_matrix(y_test_dl, y_pred), '\n')
     print("Classification Report:\n", classification_report(y_test_dl, y_pred, target_names=target_classes_dl), '\n')
 
@@ -158,11 +159,13 @@ def validate_multilayer_perceptron(X_val_dl, y_val_dl, y_val_dl_reshaped, sequen
 
     # Calculate confusion matrix and classification report
     val_accuracy = accuracy_score(y_val_dl, y_pred)
+    val_balanced_accuracy = balanced_accuracy_score(y_val_dl, y_pred)
     val_confusion_matrix = confusion_matrix(y_val_dl, y_pred)
     val_classification_report = classification_report(y_val_dl, y_pred, target_names=target_classes_dl)
 
     # Print validation accuracy, confusion matrix, and classification report
     print("Validation Accuracy:", val_accuracy, '\n')
+    print("Balanced Accuracy", val_balanced_accuracy, '\n')
     print("Confusion Matrix:\n", val_confusion_matrix, '\n')
     print("Classification Report:\n", val_classification_report, '\n')
 
@@ -172,6 +175,7 @@ def validate_multilayer_perceptron(X_val_dl, y_val_dl, y_val_dl_reshaped, sequen
         os.makedirs("result_files/mlp_folder")
     with open("result_files/mlp_folder/validation_results.txt", "w", encoding="utf-8") as file:
         file.write("Validation Accuracy: {}\n\n".format(val_accuracy))
+        file.write("Validation Balanced Accuracy: {}\n\n".format(val_balanced_accuracy))
         file.write("Confusion Matrix:\n{}\n\n".format(val_confusion_matrix))
         file.write("Classification Report:\n{}\n".format(val_classification_report))
 
