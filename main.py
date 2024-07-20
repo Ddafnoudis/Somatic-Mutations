@@ -1,6 +1,5 @@
 """
 """
-from pathlib import Path
 from scripts.config_fun import parse_configuration_files
 from scripts.condition_statements import condition_statement
 
