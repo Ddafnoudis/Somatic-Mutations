@@ -9,7 +9,6 @@ import pandas as pd
 from keras import layers
 from sklearn.utils import shuffle
 import plotly.graph_objects as go
-from keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, balanced_accuracy_score, classification_report
@@ -46,12 +45,13 @@ def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
     # Define the number of classes
     num_classes = len(np.unique(target_classes_dl))
     # Reshape the target values
-    y_train_dl_reshaped = to_categorical(y_train_dl, num_classes)
+    y_train_dl_reshaped = np.eye(num_classes)[y_train_dl]
     # Reshape Test set
-    y_test_dl_reshaped = to_categorical(y_test_dl, num_classes)
+    y_test_dl_reshaped = np.eye(num_classes)[y_test_dl]
     # Reshape the validation target
-    y_val_dl_reshaped = to_categorical(y_val_dl, num_classes)
-    # Define the the size of the features
+    y_val_dl_reshaped = np.eye(num_classes)[y_val_dl]
+    
+    # Define the size of the features
     feature_size = len(feat_dl.columns)
 
     # Depine the dropout rate
