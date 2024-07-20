@@ -6,15 +6,15 @@ library(maftools)
 packageVersion("maftools")
 
 # Set working directory
-setwd("C:/Users/dimit/Desktop/ML_Thesis_PDF_books_and_bibliography/DATASETS_THESIS/data_scripts/Somatic-Mutations/scripts_gene_analysis/datasets/")
+setwd("/Somatic-Mutations/scripts_gene_analysis/datasets/")
 
 # Define the names of the ALL files
-all_2015 = 'all_stjude_2015_data_mutations.txt'
-all_2016 = 'all_stjude_2016_data_mutations.txt'
+all_2015 <- "all_stjude_2015_data_mutations.txt"
+all_2016 <- "all_stjude_2016_data_mutations.txt"
 
 # Read the files
-all_2015 = read.csv(all_2015, sep = '\t')
-all_2016 = read.csv(all_2016, sep = '\t')
+all_2015 = read.csv(all_2015, sep = "\t")
+all_2016 = read.csv(all_2016, sep = "\t")
 
 # Merge ALL DataFrames
 all_df_list <- list(all_2015, all_2016)
@@ -22,8 +22,8 @@ all_total <- Reduce(function(x, y) merge(x, y, all=TRUE), all_df_list)
 
 
 # Define data and read DataFrame
-laml_data_mut = 'laml_tcga_pan_can_atlas_2018_data_mutations.txt'
-cll_data_mut = 'cll_broad_2015_data_mutations.txt'
+laml_data_mut <- "laml_tcga_pan_can_atlas_2018_data_mutations.txt"
+cll_data_mut <- "cll_broad_2015_data_mutations.txt"
 
 
 
@@ -75,8 +75,8 @@ for(maf in maf_list){
 
 # Kataegis plot
 for(maf in maf_list){
-  rainfallPlot(maf=maf, detectChangePoints = TRUE, pointSize = 0.5)  
-}
+  rainfallPlot(maf=maf, detectChangePoints = TRUE, pointSize = 0.5)
+  }
 
 # Plot the Variant allele Frequencies
 for(maf in maf_list){
