@@ -1,7 +1,7 @@
 """
 """
+import os
 import pandas as pd
-from pathlib import Path
 from scripts.gene_list import gene_list_
 from scripts.config_gene_fun import parse_configuration_files
 from scripts.enrich_gene import over_representation_analysis
@@ -20,6 +20,7 @@ def main():
     gene_file_folder=config["GENE_FILES_FOLDER"]
     hallmark_results=config["HALLMARK_RESULTS"]
     cll_enr_res=config["CLL_ENR_RESULTS"]
+    enr_res_folder=config["ENR_RESULT_FOLDER"]
     
     # Parse the dataset
     df = pd.read_csv(dataset, sep='\t', dtype=object)
@@ -29,9 +30,9 @@ def main():
     if cll_enr_res.exists():
         print("Gene set enrichments analysis is done!")
     else:
-        pass
-        # Over-representation analysis
-        #over_representation_analysis()
+        os.mkdir(enr_res_folder)
+       # Over-representation analysis
+        over_representation_analysis()
 
     # Read the enrichment results for each gene list
     all_enr_reactome_22 = pd.read_csv("hallmark/ern_res_p_values_15/ALL_gene_list_top_enriched_pathways.tsv", sep="\t", index_col=False)
