@@ -4,6 +4,6 @@ GMT_FOLDER: "/data_scripts/Somatic-Mutations/scripts_gene_analysis/gmt_file/"
 GENE_FILES_FOLDER: "/data_scripts/Somatic-Mutations/scripts_gene_analysis/gene_folder/"
 
 HALLMARK_RESULTS: "scripts_gene_analysis/hallmark/ALL_gene_list.txt_enrichment_results.csv"
-
+ENR_RESULT_FOLDER: "/scripts_gene_analysis/hallmark/ern_res_p_values_15/"
 CLL_ENR_RESULTS: "/scripts_gene_analysis/hallmark/ern_res_p_values_15/CLL_gene_list_top_enriched_pathways.tsv"
 
