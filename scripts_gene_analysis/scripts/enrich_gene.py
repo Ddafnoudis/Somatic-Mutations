@@ -11,7 +11,6 @@ def over_representation_analysis():
     """
     Perform over-representation analysis using hallmark gene set files.
     """
-    pass
     # Define the gene lists and corresponding titles
     files = ["ALL_gene_list.txt", "LAML_gene_list.txt", "CLL_gene_list.txt"]
     title_names = ["Acute Lymphoblastic Leukemia", "Acute Myeloid Leukemia", "Chronic Lymphocytic Leukemia"]
@@ -31,24 +30,24 @@ def over_representation_analysis():
         
         # Define the hallmark gene set file and significance threshold
         significance_threshold = 0.05
-        
+                
         # Perform over-representation analysis
         enr_over_repr = gp.enrichr(gene_list=glist,
-                                   organism="human",
-                                   gene_sets=['Reactome_2022'],
-                                   cutoff=significance_threshold,
-                                   verbose=True)
+                                organism="human",
+                                gene_sets=["Reactome 2022"],
+                                cutoff=significance_threshold,
+                                verbose=True)
         
         # Get the enrichment results
         enr_results = enr_over_repr.results
 
         # Save the enrichment results to a file
-        enr_results.to_csv(f"hallmark/{file}_enrichment_results.csv", sep='\t', index=False)
+        enr_results.to_csv(f"hallmark/{file}_{set}enrichment_results.csv", sep='\t', index=False)
         
         # Filter significant pathways
         significant_pathways = enr_results[enr_results['Adjusted P-value'] < significance_threshold]
 
-        # Plot the top 20 most significant pathways
+        # Plot the top 15 most significant pathways
         if not significant_pathways.empty:
             top15_pathways = significant_pathways.nsmallest(15, 'Adjusted P-value')
             plt.figure(figsize=(12, 8))
@@ -66,12 +65,12 @@ def over_representation_analysis():
             plt.axhline(y=significance_threshold, color='red', linestyle='--', label='Significance Threshold (0.05)')
             plt.xticks(rotation=90)
             plt.yticks(rotation=55)
-            plt.title(f"Top 20 Significant Pathways for {title_name}")
+            plt.title(f"Top 15 Significant Pathways for {title_name}")
             plt.xlabel('Gene Set')
             plt.ylabel('Adjusted P-value')
             plt.tight_layout()
             plt.savefig(f"hallmark/dotplot_{title_name}.png")
-            plt.show()
+            plt.close()
 
     return enr_results
 
