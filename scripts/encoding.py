@@ -3,42 +3,40 @@
 2) Stratified k-fold cross-validation
 """
 import pandas as pd
+from sklearn.utils import shuffle
 from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import OrdinalEncoder
-from sklearn.model_selection import StratifiedKFold
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold, train_test_split
 
 
-def ordinal_encode_data(feat, tar, seed):
+def encode_data(feat, tar, seed):
     """
     Encode data
     """
-    features = feat.astype(str)
-    # Ordinal encoding
-    ordinal_encoder = OrdinalEncoder()
-    # Define columns
-    columns = ['Hugo_Symbol', 'Chromosome', 'Start_Position', 'Variant_Classification',
-       'Tumor_Seq_Allele2', 't_ref_count', 't_alt_count']
-    # Encode features and target and set as DataFrame
-    features_enc = pd.DataFrame(ordinal_encoder.fit_transform(features), columns=columns)
-    # Create the label encoder
-    label_enc = LabelEncoder()
-    # Encode target
-    target_enc = label_enc.fit_transform(tar)
-    # Tranform target into Dataframe
-    target_enc_df = pd.DataFrame(target_enc, columns=["Disease_Type"])
+    feat_str = feat.astype(str)
+    # One hot encoding
+    features_enc = pd.get_dummies(feat_str, drop_first=True, dtype=int)
+    print(f"Encoding Features shape: {features_enc.shape}")
+    # Label Encoding
+    lb = LabelEncoder()
+    target_enc = lb.fit_transform(tar)
+    target_enc = pd.DataFrame(target_enc, columns=["Disease_Type"])
+    # Shuffle the data
+    features_enc, target_enc = shuffle(features_enc, target_enc, random_state=seed)
     # Concatenate encoded features and target
-    data = pd.concat([features_enc, target_enc_df], axis=1)    
+    data = pd.concat([features_enc, target_enc], axis=1)    
     
     return data, features_enc, target_enc
 
 
 def stratified_k_fold(feat_enc, tar_enc, seed):
+    """
+    Stratified K-fold
+    """
     # Stratified K-Fold cross-validation
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
     for train_index, test_index in skf.split(feat_enc, tar_enc):
         X_train, X_test = feat_enc.iloc[train_index], feat_enc.iloc[test_index]
-        y_train, y_test = tar_enc[train_index], tar_enc[test_index]
+        y_train, y_test = tar_enc.iloc[train_index], tar_enc.iloc[test_index]
     # Validation test
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25,  random_state=seed)
 
@@ -46,5 +44,5 @@ def stratified_k_fold(feat_enc, tar_enc, seed):
 
 
 if __name__ == "__main__":
-    ordinal_encode_data()
+    encode_data()
     stratified_k_fold()
