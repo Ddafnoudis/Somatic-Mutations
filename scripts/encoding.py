@@ -7,16 +7,12 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import train_test_split
-from imblearn.over_sampling import RandomOverSampler
 
 
 def ordinal_encode_data(feat, tar, seed):
     """
-    Over sample the minor classes and encode data
+    Encode data
     """
-   # Oversampling
-    ros = RandomOverSampler(random_state=seed)
-    features, target = ros.fit_resample(feat, tar)
     features = feat.astype(str)
     # Ordinal encoding
     ordinal_encoder = OrdinalEncoder()
