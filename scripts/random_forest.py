@@ -5,14 +5,14 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.metrics import balanced_accuracy_score, classification_report, confusion_matrix, RocCurveDisplay, roc_curve, roc_auc_score, auc
 from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import balanced_accuracy_score, classification_report, confusion_matrix, roc_curve, auc
 
 
 def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val, y_val, target_classes, seed):
     # Print the shapes of featues 
-    print(f"Shapes of: *X_train{X_train.shape}\n *X_test {X_test.shape}\n")
+    print(f"Shapes of: \n*X_train{X_train.shape}\n *X_test {X_test.shape}\n")
     # Define the number of decision trees
     optimal_decision_trees = 100
     # Define parameters of random forest moder
@@ -54,13 +54,13 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
     fig.update_xaxes(side="top")
     fig.show()
 
-    # Plot confusion matrix (train)
+    # Plot confusion matrix (validation)
     fig = px.imshow(cm_val, text_auto=True, title="Confusion Matrix: Validation set",
                 labels=dict(x="Predicted Labels", y="True Labels", color="Productivity"),
                 x=target_classes,
                 y=target_classes)
     fig.update_xaxes(side="top")
-    # fig.show()
+    fig.show()
 
     # Save the results
     np.savetxt('result_files/cv_score.txt', cv_score)
