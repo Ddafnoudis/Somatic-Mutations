@@ -5,7 +5,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, RocCurveDisplay, roc_curve, roc_auc_score, auc
+from sklearn.metrics import balanced_accuracy_score, classification_report, confusion_matrix, RocCurveDisplay, roc_curve, roc_auc_score, auc
 from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 
@@ -26,12 +26,12 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
     # Predictions on validation set
     y_pred_val = rfc.predict(X_val)
     # Accuracy
-    accuracy = accuracy_score(y_test, y_pred)
-    print(f"Accuracy in test: {accuracy}\n")
+    b_accuracy = balanced_accuracy_score(y_test, y_pred)
+    print(f"Accuracy in test: {b_accuracy}\n")
 
     # Accuracy on validation set
-    accuracy_val = accuracy_score(y_val, y_pred_val)
-    print(f"Accuracy in validation: {accuracy_val}\n")
+    b_accuracy_val = balanced_accuracy_score(y_val, y_pred_val)
+    print(f"Accuracy in validation: {b_accuracy_val}\n")
 
     # Classification report
     report = classification_report(y_test, y_pred, target_names=target_classes)
@@ -65,11 +65,11 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
     # Save the results
     np.savetxt('result_files/cv_score.txt', cv_score)
     
-    with open('result_files/accuracy.txt', "w") as f:
-        f.write(str(accuracy))
+    with open('result_files/balanced_accuracy.txt', "w") as f:
+        f.write(str(b_accuracy))
 
-    with open('result_files/accuracy_val.txt', "w") as f:
-        f.write(str(accuracy_val))
+    with open('result_files/balanced_accuracy_val.txt', "w") as f:
+        f.write(str(b_accuracy_val))
     
     with open('result_files/class_report.txt', "w") as f:
         f.write(report)
@@ -136,7 +136,7 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
 
     # fig.show()
 
-    return cv_score, accuracy, report, cm, accuracy_val, report_val, cm_val
+    return cv_score, b_accuracy, report, cm, b_accuracy_val, report_val, cm_val
 
 
 if __name__ == "__main__":
