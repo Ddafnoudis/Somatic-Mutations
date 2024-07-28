@@ -14,7 +14,7 @@ The second section includes the development of Machine Learning and Deep learnin
 ## Python version
 3.12.3
 
-## Requirements 
+## Requirements (Python)
  ```bash
 numpy=1.26.4
 pandas=2.1.4
@@ -34,7 +34,7 @@ seaborn=0.12.2
 4.2.3
 ```
 
-## Requirements
+## Requirements (R)
 ```bash
 maftools==2.14.0
 ```
