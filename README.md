@@ -26,6 +26,9 @@ Python 3.12.3
 - seaborn=0.12.2                  
 - session-info=1.0.0
 - tensorflow=2.16.1
+- keras==3.3.3
+- keras-utils==1.0.13
+
 
 ## R version
 R 4.2.3
