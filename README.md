@@ -12,28 +12,32 @@ The second section includes the development of Machine Learning and Deep learnin
 - [cBioPortal](https://www.cbioportal.org/datasets)
 
 ## Python version
-Python 3.12.3
+3.12.3
 
 ## Requirements 
  ```bash
-numpy==1.26.4
-pandas==2.1.4
-tensorflow==2.16.1
-keras==3.3.3
-keras-utils==1.0.13
-matplotlib==3.8.4
-plotly==5.9.0
-scikit-learn==1.4.2           
-scipy==1.11.4 
-lazypredict==0.2.12                
-seaborn==0.12.2                  
+numpy=1.26.4
+pandas=2.1.4
+tensorflow=2.16.1
+keras=3.3.3
+keras-utils=1.0.13
+matplotlib=3.8.4
+plotly=5.9.0
+scikit-learn=1.4.2           
+scipy=1.11.4 
+lazypredict=0.2.12                
+seaborn=0.12.2                  
 ```
 
 ## R version
-R 4.2.3
+```bash
+4.2.3
+```
 
 ## Requirements
-- maftools=2.14.0
+```bash
+maftools==2.14.0
+```
 
 ## Install requirements
 ```bash
