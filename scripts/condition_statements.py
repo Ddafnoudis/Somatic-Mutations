@@ -77,7 +77,7 @@ def condition_statement(working_dir: Path, output_dir: Path,
         print(f"Lazy predict has done its predictions! Location: {output_dir}/\n")
     else:
         print("Start Lazy Predict classification!")
-        # lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test, seed=seed)
+        lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test, seed=seed)
 
     
 
