@@ -80,13 +80,12 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
     np.savetxt('result_files/conf_mtx.txt', cm, fmt="%d")
     np.savetxt('result_files/conf_mtx_val.txt', cm_val, fmt="%d")
 
-    # Roc Curve for the 
+    # Roc Curve
     n_classes = len(np.unique(y_val))
-    y_score = rfc.fit(X_train, y_train).predict_proba(X_val)
+    y_score = rfc.predict_proba(X_val)
     lb = LabelBinarizer().fit(y_val)
     y_onehot_test = lb.transform(y_val)
 
-        
     # Initialize variables for ROC curve
     fpr = {}
     tpr = {}
@@ -98,7 +97,7 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
         fpr[i], tpr[i], thresh[i] = roc_curve(y_onehot_test[:, i], y_score[:, i])
         roc_auc[i] = auc(fpr[i], tpr[i])
 
-    # Plotting using Plotly
+    # Plot using Plotly
     fig = go.Figure()
 
     # Plot ROC curve for each class
@@ -108,36 +107,32 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
                                 name=f'{target_classes[i]} vs Rest (AUC={roc_auc[i]:.2f})'))
 
     # Add diagonal line
-    fig.add_shape(
-        type='line', line=dict(dash='dash'),
-        x0=0, x1=1, y0=0, y1=1
-    )
-
     fig.update_layout(
-        title='Multiclass ROC curve',
-        xaxis_title='False Positive Rate',
-        yaxis_title='True Positive Rate',
-        xaxis=dict(range=[0, 1]),
-        yaxis=dict(range=[0, 1.05]),
-        legend=dict(
-            x=1,
-            y=0,
-            traceorder='normal',
-            font=dict(
-                family='sans-serif',
-                size=12,
-                color='black'
-            ),
-            bgcolor='LightSteelBlue',
-            bordercolor='Black',
-            borderwidth=1
-        )
+    title='Multiclass ROC curve',
+    xaxis_title='False Positive Rate',
+    yaxis_title='True Positive Rate',
+    xaxis=dict(range=[0, 1], title_font=dict(size=20)), 
+    yaxis=dict(range=[0, 1.05], title_font=dict(size=20)),  
+    legend=dict(
+        x=1,
+        y=0,
+        traceorder='normal',
+        font=dict(
+            family='sans-serif',
+            size=10,
+            color='black'
+        ),
+        bgcolor='LightSteelBlue',
+        bordercolor='Black',
+        borderwidth=1
+    ),
+    width=1200,
+    height=600
     )
-
-    # fig.show()
+    fig.show()
 
     return cv_score, b_accuracy, report, cm, b_accuracy_val, report_val, cm_val
 
 
-if __name__ == "__main__":
+if __name__=="__main__":
     random_forest_train_test_validation()
