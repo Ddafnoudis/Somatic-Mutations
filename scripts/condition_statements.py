@@ -4,13 +4,12 @@ Condition statements
 import os
 from pathlib import Path
 from scripts.correlation import correlation
-# from scripts.lazy_predict import lazy_predict
+from scripts.lazy_predict import lazy_predict
 from scripts.cleaning_datasets import clean_dataframes
 from scripts.mlp_nn import multilayer_perceptron, validate_multilayer_perceptron
 from scripts.random_forest import random_forest_train_test_validation 
 from scripts.feature_selection import anova_f_value, mutual_info_class
 from scripts.encoding import encode_data, stratified_k_fold
-from scripts.lazy_predict import run_lazy_predict_with_threading
 
 
 def condition_statement(working_dir: Path, output_dir: Path,
@@ -78,7 +77,7 @@ def condition_statement(working_dir: Path, output_dir: Path,
         print(f"Lazy predict has done its predictions! Location: {output_dir}/\n")
     else:
         print("Start Lazy Predict classification!")
-        run_lazy_predict_with_threading(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test, seed=seed)
+        lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test, seed=seed)
 
     
 
