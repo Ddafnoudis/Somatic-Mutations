@@ -14,21 +14,20 @@ The second section includes the development of Machine Learning and Deep learnin
 ## Python version
 Python 3.12.3
 
-## Requirements
-- lazypredict=0.2.12 
-- matplotlib=3.8.4
-- numpy=1.26.4
-- pandas=2.1.4
-- plotly=5.9.0
-- python=3.12.3
-- scikit-learn=1.4.2           
-- scipy=1.11.4                 
-- seaborn=0.12.2                  
-- session-info=1.0.0
-- tensorflow=2.16.1
+## Requirements 
+ ```bash
+- numpy==1.26.4
+- pandas==2.1.4
+- tensorflow==2.16.1
 - keras==3.3.3
 - keras-utils==1.0.13
-
+- matplotlib==3.8.4
+- plotly==5.9.0
+- scikit-learn==1.4.2           
+- scipy==1.11.4 
+- lazypredict==0.2.12                
+- seaborn==0.12.2                  
+```
 
 ## R version
 R 4.2.3
