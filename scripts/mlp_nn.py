@@ -140,7 +140,7 @@ def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
     # Unite the figure's information
     fig = go.Figure(data=results, layout=layout)
     # Show the figure
-    # fig.show()
+    fig.show()
 
     return sequential_model, X_val_dl, y_val_dl, y_val_dl_reshaped, target_classes_dl
 
