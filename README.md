@@ -34,7 +34,7 @@ seaborn=0.12.2
 
 ## Requirements (R)
 ```bash
-maftools==2.14.0
+maftools=2.14.0
 ```
 
 ## Install requirements
