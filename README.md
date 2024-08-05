@@ -30,9 +30,7 @@ seaborn=0.12.2
 ```
 
 ## R version
-```bash
 4.2.3
-```
 
 ## Requirements (R)
 ```bash
