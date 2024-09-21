@@ -88,6 +88,10 @@ def clean_dataframes():
 
     fig.update_layout(coloraxis_colorbar=dict(title="Missing Data"))
     # fig.show()
+    
+    # Print the total number of missing values and convert it into percentage
+    nan_dataset_percent = nan_dataset.isna().sum().sum() / len(nan_dataset) * 100
+    print(f"The Percent of missing values is {nan_dataset_percent}")  
 
     # Drop the rows that have missing data
     nan_dataset.dropna(ignore_index=True, inplace=True)
