@@ -1,4 +1,4 @@
-# Project: Interpretative analysis of human somatic mutations in Acute Myeloid Leukemia.
+# Project: Interpretative analysis of human somatic mutations in Leukemia.
 ![output](https://github.com/user-attachments/assets/6465134d-f158-499b-8ed5-8cdaab94bba9)
 
 ## Introduction
@@ -30,13 +30,11 @@ seaborn=0.12.2
 ```
 
 ## R version
-```bash
 4.2.3
-```
 
 ## Requirements (R)
 ```bash
-maftools==2.14.0
+maftools=2.14.0
 ```
 
 ## Install requirements
