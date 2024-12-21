@@ -6,6 +6,7 @@ import sys
 import keras
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from keras import layers
 from sklearn.utils import shuffle
 import plotly.graph_objects as go
@@ -16,7 +17,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, balanced_accuracy_
 
 if not sys.stdout.encoding == 'UTF-8':
     sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf8', buffering=1)
-
+tf.random.set_seed(42)
 
 def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
     """
@@ -87,7 +88,7 @@ def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
     ]
 
     # Define the optimizer with specified learning rate
-    optimizer = keras.optimizers.Adam(learning_rate=0.001)
+    optimizer = keras.optimizers.Adam(learning_rate=0.004)
 
     # Compile the model
     sequential_model.compile(optimizer=optimizer, 
