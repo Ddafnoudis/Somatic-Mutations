@@ -33,7 +33,6 @@ def clean_dataframes():
     first_df = pd.merge(df1, df2, left_on= "PATIENT_ID", right_on="Tumor_Sample_Barcode")
     df4 = pd.read_csv(path + "all_stjude_2016_data_mutations.txt", sep="\t")
     df6 = pd.read_csv(path + "laml_tcga_pan_can_atlas_2018_data_mutations.txt", sep="\t", low_memory=False)
-    df7 = pd.read_csv(path + "cll_broad_2015_data_clinical_patient.txt", sep="\t", low_memory=False)
     df8 = pd.read_csv(path + "cll_broad_2015_data_mutations.txt", sep="\t")
 
     # Fill NaN with "-"
