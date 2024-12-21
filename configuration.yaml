@@ -1,7 +1,7 @@
 # Seed for reproducibility
 SEED: 42
 # Data path
-WORK_DIR: '/data_scripts/Somatic-Mutations/'
+WORK_DIR: 'Somatic-Mutations/'
 DATASET: 'datasets/full_data.tsv'
 OUTPUT_DIR: 'result_files/'
 # Correlation matrix cramers_v
