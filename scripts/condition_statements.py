@@ -3,6 +3,7 @@ Condition statements
 """
 import os
 from pathlib import Path
+from scripts.optimize_learning_rate import learning_rate_optimization
 from scripts.correlation import correlation
 from scripts.lazy_predict import lazy_predict
 from scripts.cleaning_datasets import clean_dataframes
@@ -57,12 +58,12 @@ def condition_statement(working_dir: Path, output_dir: Path,
     # Train-test-validation stratified k-fold split
     X_train, X_test, X_val, y_train, y_test, y_val = stratified_k_fold(feat_enc=features_enc, tar_enc=target_enc, seed=seed)
     
-    if anova.exists() and mit.exists():
-        print(f"Anova and Mutual info have been done! Location: {output_dir}/\n")
-    else:
-        print("Feature selection begins!")
-        anova_f_value(X_train, X_test, y_train)
-        mutual_info_class(X_train, X_test, y_train)
+    # if anova.exists() and mit.exists():
+    #     print(f"Anova and Mutual info have been done! Location: {output_dir}/\n")
+    # else:
+    #     print("Feature selection begins!")
+    #     anova_f_value(X_train, X_test, y_train)
+    #     mutual_info_class(X_train, X_test, y_train)
 
     if report_rf.exists():
         print(f"Random Forest has been completed. Location: {output_dir}/\n")
@@ -73,13 +74,15 @@ def condition_statement(working_dir: Path, output_dir: Path,
                                             X_val=X_val, y_val=y_val, 
                                             target_classes=target_classes, seed=seed)
     
-    if lzp_results.exists():
-        print(f"Lazy predict has done its predictions! Location: {output_dir}/\n")
-    else:
-        print("Start Lazy Predict classification!")
-        lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test, seed=seed)
+    # if lzp_results.exists():
+    #     print(f"Lazy predict has done its predictions! Location: {output_dir}/\n")
+    # else:
+    #     print("Start Lazy Predict classification!")
+    #     lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test, seed=seed)
 
-    
+    # MLP learning rate optimization
+    # number = learning_rate_optimization(feat_dl=features, tar_dl=target, target_classes_dl=target_classes, seed=seed)
+
 
     # Multilayer Perceptron (Sequential)
     if mlp_results.exists():
