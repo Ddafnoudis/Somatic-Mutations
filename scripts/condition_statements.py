@@ -4,6 +4,7 @@ Condition statements
 import os
 from pathlib import Path
 from scripts.optimize_learning_rate import learning_rate_optimization
+from scripts.trial import grid_search
 from scripts.correlation import correlation
 from scripts.lazy_predict import lazy_predict
 from scripts.cleaning_datasets import clean_dataframes
@@ -82,13 +83,30 @@ def condition_statement(working_dir: Path, output_dir: Path,
 
     # MLP learning rate optimization
     # number = learning_rate_optimization(feat_dl=features, tar_dl=target, target_classes_dl=target_classes, seed=seed)
+    
+    # Define parameter grid
+    param_grid = {
+        'dropout_rate': [0.2],
+        'learning_rate': [0.003],
+        'batch_size': [100]
+    }
+    # MLP grid search optimization
+    best_params = grid_search(X_train_dl=X_train, X_test_dl=X_test, 
+                              y_train_dl=y_train, y_test_dl=y_test, 
+                              X_val_dl=X_val, y_val_dl=y_val,
+                              target_classes_dl=target_classes,
+                              seed=seed, param_grid=param_grid)
 
 
     # Multilayer Perceptron (Sequential)
     if mlp_results.exists():
         print("Multilayer Result exist!")
     else:
-        sequential_model, X_val_dl, y_val_dl, y_val_dl_reshaped, target_classes_dl = multilayer_perceptron(feat_dl=features, tar_dl=target, target_classes_dl=target_classes, seed=seed)
+        sequential_model, X_val_dl, y_val_dl, y_val_dl_reshaped, target_classes_dl = multilayer_perceptron(X_train_dl=X_train, X_test_dl=X_test, 
+                              y_train_dl=y_train, y_test_dl=y_test, 
+                              X_val_dl=X_val, y_val_dl=y_val,
+                              target_classes_dl=target_classes,
+                              seed=seed, best_params=best_params)
         validate_multilayer_perceptron(X_val_dl=X_val_dl, y_val_dl=y_val_dl, y_val_dl_reshaped=y_val_dl_reshaped, 
                                        sequential_model=sequential_model, target_classes_dl=target_classes)
 

@@ -23,31 +23,31 @@ os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact re
 
 
 # Define the grid search function
-def grid_search(feat_dl, tar_dl, target_classes_dl, seed, param_grid):
-    feat_dl = feat_dl.astype(str)
+def grid_search(X_train_dl, X_test_dl,y_train_dl, y_test_dl, X_val_dl, y_val_dl, target_classes_dl, seed, param_grid):
+    # feat_dl = feat_dl.astype(str)
 
-    # One-hot encode features
-    feat_dl = pd.get_dummies(feat_dl, drop_first=True, dtype=int)
-    print(f"Feature shape for MLP training: {feat_dl.shape}")
+    # # One-hot encode features
+    # feat_dl = pd.get_dummies(feat_dl, drop_first=True, dtype=int)
+    # print(f"Feature shape for MLP training: {feat_dl.shape}")
     
-    # Label Encoding for target
-    lb = LabelEncoder()
-    tar_dl_enc = lb.fit_transform(tar_dl)
+    # # Label Encoding for target
+    # lb = LabelEncoder()
+    # tar_dl_enc = lb.fit_transform(tar_dl)
 
-    # Shuffle the data
-    feat_dl, tar_dl_enc = shuffle(feat_dl, tar_dl_enc, random_state=seed)
+    # # Shuffle the data
+    # feat_dl, tar_dl_enc = shuffle(feat_dl, tar_dl_enc, random_state=seed)
 
-    # Define the size of the features
-    feature_size = len(feat_dl.columns)
+    # # Define the size of the features
+    feature_size = len(X_train_dl.columns)
 
-    # Five-fold stratification
-    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
-    for train_index, test_index in skf.split(feat_dl, tar_dl_enc):
-        X_train_dl, X_test_dl = feat_dl.iloc[train_index], feat_dl.iloc[test_index]
-        y_train_dl, y_test_dl = tar_dl_enc[train_index], tar_dl_enc[test_index]
+    # # Five-fold stratification
+    # skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
+    # for train_index, test_index in skf.split(feat_dl, tar_dl_enc):
+    #     X_train_dl, X_test_dl = feat_dl.iloc[train_index], feat_dl.iloc[test_index]
+    #     y_train_dl, y_test_dl = tar_dl_enc[train_index], tar_dl_enc[test_index]
 
-    # Define the validation set
-    X_train_dl, X_val_dl, y_train_dl, y_val_dl = train_test_split(X_train_dl, y_train_dl, test_size=0.25, random_state=seed)
+    # # Define the validation set
+    # X_train_dl, X_val_dl, y_train_dl, y_val_dl = train_test_split(X_train_dl, y_train_dl, test_size=0.25, random_state=seed)
 
     # Number of classes
     num_classes = len(np.unique(target_classes_dl))
@@ -56,6 +56,12 @@ def grid_search(feat_dl, tar_dl, target_classes_dl, seed, param_grid):
     y_train_dl_reshaped = np.eye(num_classes)[y_train_dl]
     y_test_dl_reshaped = np.eye(num_classes)[y_test_dl]
     y_val_dl_reshaped = np.eye(num_classes)[y_val_dl]
+
+    # Remove the extra dimension
+    y_train_dl_reshaped = np.squeeze(y_train_dl_reshaped)
+    y_test_dl_reshaped = np.squeeze(y_test_dl_reshaped)
+    y_val_dl_reshaped = np.squeeze(y_val_dl_reshaped)
+
 
     best_score = 0
     best_params = None
@@ -82,7 +88,7 @@ def grid_search(feat_dl, tar_dl, target_classes_dl, seed, param_grid):
                 )
 
                 # Train the model
-                model.fit(X_train_dl, y_train_dl_reshaped, epochs=30, batch_size=batch_size, verbose=2, shuffle=True)
+                model.fit(X_train_dl, y_train_dl_reshaped, epochs=2, batch_size=batch_size, verbose=2, shuffle=True)
 
                 # Predict on the test set
                 y_pred = model.predict(X_test_dl)

@@ -2,6 +2,7 @@
 Develop a Multilayer Perceptron for classification task 
 """
 import os
+import random
 import sys
 import keras
 import numpy as np
@@ -17,32 +18,21 @@ from sklearn.metrics import accuracy_score, confusion_matrix, balanced_accuracy_
 
 if not sys.stdout.encoding == 'UTF-8':
     sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf8', buffering=1)
+# Set seeds for reproducibility
+random.seed(42)
+np.random.seed(42)
 tf.random.set_seed(42)
 
-def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
+# Ensure TensorFlow operations are deterministic
+os.environ['TF_DETERMINISTIC_OPS'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact reproducibility
+
+
+
+def multilayer_perceptron(X_train_dl, X_test_dl,y_train_dl, y_test_dl, X_val_dl, y_val_dl, target_classes_dl, seed, best_params):
     """
     Classification process using Multilayer Perceptron
     """
-    feat_dl = feat_dl.astype(str)
-
-    # One hot encoding
-    feat_dl = pd.get_dummies(feat_dl, drop_first=True, dtype=int)
-    print(f"Feature shape for MLP training: {feat_dl.shape}")
-    # Label Encoding
-    lb = LabelEncoder()
-    tar_dl_enc = lb.fit_transform(tar_dl)
-
-    # Shuffle the data
-    feat_dl, tar_dl_enc = shuffle(feat_dl, tar_dl_enc, random_state=seed)
-
-    # Five fold stratification
-    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
-    for train_index, test_index in skf.split(feat_dl, tar_dl_enc):
-        X_train_dl, X_test_dl = feat_dl.iloc[train_index], feat_dl.iloc[test_index]
-        y_train_dl, y_test_dl = tar_dl_enc[train_index], tar_dl_enc[test_index]
-    # Define the validation set
-    X_train_dl, X_val_dl, y_train_dl, y_val_dl = train_test_split(X_train_dl, y_train_dl, test_size=0.25,  random_state=seed)
-
     # Define the number of classes
     num_classes = len(np.unique(target_classes_dl))
     # Reshape the target values
@@ -51,25 +41,27 @@ def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
     y_test_dl_reshaped = np.eye(num_classes)[y_test_dl]
     # Reshape the validation target
     y_val_dl_reshaped = np.eye(num_classes)[y_val_dl]
+
+    # Remove the extra dimension
+    y_train_dl_reshaped = np.squeeze(y_train_dl_reshaped)
+    y_test_dl_reshaped = np.squeeze(y_test_dl_reshaped)
+    y_val_dl_reshaped = np.squeeze(y_val_dl_reshaped)
+
     
     # Define the size of the features
-    feature_size = len(feat_dl.columns)
+    feature_size = len(X_train_dl.columns)
 
-    # Depine the dropout rate
-    dropout_rate = 0.4
     # Define the epochs
     epochs = 30
-    # Define the batch_size
-    batch_size = 100
     
     # Define the Neural Network structure using layers and dropout rate
     sequential_model = keras.Sequential(
         [
         layers.Input(shape=(feature_size, )),
-        layers.Dense(16, activation="relu"),
-        layers.Dropout(dropout_rate),  
         layers.Dense(32, activation="relu"),
-        layers.Dropout(dropout_rate),
+        layers.Dropout(best_params['dropout_rate']),  
+        layers.Dense(64, activation="relu"),
+        layers.Dropout(best_params['dropout_rate']),
         layers.Dense(3, activation="softmax")
         ]
     )
@@ -88,7 +80,7 @@ def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
     ]
 
     # Define the optimizer with specified learning rate
-    optimizer = keras.optimizers.Adam(learning_rate=0.004)
+    optimizer = keras.optimizers.Adam(best_params['learning_rate'])
 
     # Compile the model
     sequential_model.compile(optimizer=optimizer, 
@@ -96,10 +88,10 @@ def multilayer_perceptron(feat_dl, tar_dl, target_classes_dl, seed):
                              metrics=metrics_)
     # Fit the model
     sequential_model_fit = sequential_model.fit(x=X_train_dl, y=y_train_dl_reshaped,
-                                                epochs=epochs, batch_size=batch_size,
+                                                epochs=epochs, batch_size=best_params['batch_size'],
                                                 validation_data=(X_test_dl, y_test_dl_reshaped),
                                                 validation_split = 0.25,
-                                                verbose=2, shuffle=True)
+                                                verbose=0, shuffle=True)
 
     
     # Evaluate the model
