@@ -7,7 +7,7 @@ from scripts.condition_statements import condition_statement
 def main():
     config = parse_configuration_files(fname='configuration.yaml')
 
-    condition_statement(seed=config["SEED"], epochs=config["EPOCHS"], 
+    condition_statement(seed=config["SEED"], 
                         working_dir=config["WORK_DIR"], 
                         data=config["DATASET"], output_dir = config["OUTPUT_DIR"],
                         corr_image =config["CORR_IMAGE"], corr_results =config['CORR_RESULTS'],
