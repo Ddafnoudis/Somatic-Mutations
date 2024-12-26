@@ -8,6 +8,7 @@ import keras
 import numpy as np
 import tensorflow as tf
 from keras import layers
+from keras import callbacks
 import plotly.graph_objects as go
 from sklearn.metrics import accuracy_score, confusion_matrix, balanced_accuracy_score, classification_report
 
@@ -25,7 +26,7 @@ tf.random.set_seed(42)
 
 
 
-def multilayer_perceptron(X_train_dl, X_test_dl, y_train_dl, 
+def multilayer_perceptron(X_train_dl, X_test_dl, y_train_dl, epochs,
                           y_test_dl, X_val_dl, y_val_dl, 
                           num_classes, target_names, seed, best_params):
     """
@@ -65,11 +66,18 @@ def multilayer_perceptron(X_train_dl, X_test_dl, y_train_dl,
     sequential_model.compile(optimizer=optimizer, 
                              loss='categorical_crossentropy',
                              metrics=metrics_)
+    
+    earlystopping = callbacks.EarlyStopping(
+                                    monitor="val_loss",
+                                    mode="min",
+                                    patience=5,
+                                    restore_best_weights=True)
     # Fit the model
     sequential_model_fit = sequential_model.fit(x=X_train_dl, y=y_train_dl,
-                                                epochs=best_params['epochs'], batch_size=best_params['batch_size'],
+                                                epochs=epochs, batch_size=best_params['batch_size'],
                                                 validation_data=(X_val_dl, y_val_dl),
-                                                verbose=0, shuffle=True)
+                                                verbose=0, shuffle=True,
+                                                callbacks=[earlystopping])
 
     
     # Evaluate the model

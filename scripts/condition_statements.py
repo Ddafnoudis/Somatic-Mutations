@@ -19,7 +19,7 @@ def condition_statement(working_dir: Path, output_dir: Path,
                         lzp_results: Path, cross_val: Path, 
                         accuracy: Path, report_rf: Path, 
                         confusion_mtx: Path, seed: int,
-                        mlp_results: Path, param_grid: Dict):
+                        mlp_results: Path, epochs: int, param_grid: Dict):
     """
     Create conditions statements for the presence of the
     results files you need to have in the result_files/
@@ -92,7 +92,7 @@ def condition_statement(working_dir: Path, output_dir: Path,
     # number = learning_rate_optimization(feat_dl=features, tar_dl=target, target_classes_dl=target_classes, seed=seed)
     
     # MLP grid search optimization
-    best_params = grid_search(X_train_dl=X_train, X_test_dl=X_test, 
+    best_params = grid_search(X_train_dl=X_train, X_test_dl=X_test, epochs=epochs,
                               y_train_dl=y_train_dl_reshaped, y_test_dl=y_test_dl_reshaped,
                               num_classes=num_classes, seed=seed, 
                               param_grid=param_grid)
@@ -103,7 +103,7 @@ def condition_statement(working_dir: Path, output_dir: Path,
         print("Multilayer Result exist!")
     else:
         sequential_model, X_val_dl, y_val_dl, target_classes = multilayer_perceptron(
-            X_train_dl=X_train, X_test_dl=X_test, 
+            X_train_dl=X_train, X_test_dl=X_test, epochs=epochs,
             y_train_dl=y_train_dl_reshaped, y_test_dl=y_test_dl_reshaped, 
             X_val_dl=X_val, y_val_dl=y_val_dl_reshaped,
             num_classes=num_classes, target_names=target_classes, seed=seed, best_params=best_params
