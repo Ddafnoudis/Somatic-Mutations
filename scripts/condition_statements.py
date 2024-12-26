@@ -6,6 +6,7 @@ from typing import Dict
 from pathlib import Path
 from scripts.trial import grid_search
 from scripts.correlation import correlation
+from scripts.check_shapes import check_shape
 from scripts.lazy_predict import lazy_predict
 from scripts.cleaning_datasets import clean_dataframes
 from scripts.encoding import encode_data, stratified_k_fold
@@ -13,9 +14,8 @@ from scripts.random_forest import random_forest_train_test_validation
 from scripts.mlp_nn import multilayer_perceptron, validate_multilayer_perceptron
 
 
-def condition_statement(working_dir: Path, epochs: int, 
-                        output_dir: Path, data: Path,
-                        corr_image: Path, corr_results: Path, 
+def condition_statement(working_dir: Path, output_dir: Path, 
+                        data: Path, corr_image: Path, corr_results: Path, 
                         lzp_results: Path, cross_val: Path, 
                         accuracy: Path, report_rf: Path, 
                         confusion_mtx: Path, seed: int,
@@ -57,12 +57,19 @@ def condition_statement(working_dir: Path, epochs: int,
     target_classes = target.unique().tolist()
 
     # Encode the data 
-    data, features_enc, target_enc = encode_data(feat=features, tar=target, seed=seed)
-    print(f"The shape of the data after ordinal enocding is:\n{data.shape}")
+    features_enc, target_enc = encode_data(feat=features, tar=target, seed=seed)
+    # print(f"The shape of the data after ordinal enocding is:\n{data.shape}")
 
     # Train-test-validation stratified k-fold split
-    X_train, X_test, X_val, y_train, y_test, y_val = stratified_k_fold(feat_enc=features_enc, tar_enc=target_enc, seed=seed)
-
+    X_train, X_test, X_val, y_train, y_test, y_val, y_train_dl_reshaped, y_test_dl_reshaped, y_val_dl_reshaped, num_classes = stratified_k_fold(feat_enc=features_enc, 
+                                                                       tar_enc=target_enc, 
+                                                                       target_classes_dl=target_classes, 
+                                                                       seed=seed)
+    # Shape of train, test and validation sets
+    check_shape(X_train=X_train, X_test=X_test, 
+                y_train=y_train, y_test=y_test, 
+                X_val=X_val, y_val=y_val, y_train_dl_reshaped=y_train_dl_reshaped,
+                y_test_dl_reshaped=y_test_dl_reshaped, y_val_dl_reshaped=y_val_dl_reshaped)
     # Results of Random Forest
     if report_rf.exists():
         print(f"Random Forest has been completed. Location: {output_dir}/\n")
@@ -86,24 +93,23 @@ def condition_statement(working_dir: Path, epochs: int,
     
     # MLP grid search optimization
     best_params = grid_search(X_train_dl=X_train, X_test_dl=X_test, 
-                              y_train_dl=y_train, y_test_dl=y_test, 
-                              X_val_dl=X_val, y_val_dl=y_val,
-                              target_classes_dl=target_classes,
-                              seed=seed, param_grid=param_grid,
-                              epochs=epochs)
+                              y_train_dl=y_train_dl_reshaped, y_test_dl=y_test_dl_reshaped,
+                              num_classes=num_classes, seed=seed, 
+                              param_grid=param_grid)
 
 
     # Multilayer Perceptron (Sequential)
     if mlp_results.exists():
         print("Multilayer Result exist!")
     else:
-        sequential_model, X_val_dl, y_val_dl, y_val_dl_reshaped, target_classes_dl = multilayer_perceptron(X_train_dl=X_train, X_test_dl=X_test, 
-                              y_train_dl=y_train, y_test_dl=y_test, 
-                              X_val_dl=X_val, y_val_dl=y_val,
-                              target_classes_dl=target_classes, 
-                              epochs=epochs, seed=seed, best_params=best_params)
+        sequential_model, X_val_dl, y_val_dl, target_classes = multilayer_perceptron(
+            X_train_dl=X_train, X_test_dl=X_test, 
+            y_train_dl=y_train_dl_reshaped, y_test_dl=y_test_dl_reshaped, 
+            X_val_dl=X_val, y_val_dl=y_val_dl_reshaped,
+            num_classes=num_classes, target_names=target_classes, seed=seed, best_params=best_params
+            )
         # Validate the model
-        validate_multilayer_perceptron(X_val_dl=X_val_dl, y_val_dl=y_val_dl, y_val_dl_reshaped=y_val_dl_reshaped, 
+        validate_multilayer_perceptron(X_val_dl=X_val_dl, y_val_dl_reshaped=y_val_dl_reshaped, 
                                        sequential_model=sequential_model, target_classes_dl=target_classes)
 
 

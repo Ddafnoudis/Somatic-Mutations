@@ -25,28 +25,12 @@ tf.random.set_seed(42)
 
 
 
-def multilayer_perceptron(X_train_dl, X_test_dl,y_train_dl, 
+def multilayer_perceptron(X_train_dl, X_test_dl, y_train_dl, 
                           y_test_dl, X_val_dl, y_val_dl, 
-                          target_classes_dl, seed, best_params,
-                          epochs):
+                          num_classes, target_names, seed, best_params):
     """
     Classification process using Multilayer Perceptron
     """
-    # Define the number of classes
-    num_classes = len(np.unique(target_classes_dl))
-    # Reshape the target values
-    y_train_dl_reshaped = np.eye(num_classes)[y_train_dl]
-    # Reshape Test set
-    y_test_dl_reshaped = np.eye(num_classes)[y_test_dl]
-    # Reshape the validation target
-    y_val_dl_reshaped = np.eye(num_classes)[y_val_dl]
-
-    # Remove the extra dimension
-    y_train_dl_reshaped = np.squeeze(y_train_dl_reshaped)
-    y_test_dl_reshaped = np.squeeze(y_test_dl_reshaped)
-    y_val_dl_reshaped = np.squeeze(y_val_dl_reshaped)
-
-    
     # Define the size of the features
     feature_size = len(X_train_dl.columns)
 
@@ -54,9 +38,9 @@ def multilayer_perceptron(X_train_dl, X_test_dl,y_train_dl,
     sequential_model = keras.Sequential(
         [
         layers.Input(shape=(feature_size, )),
-        layers.Dense(32, activation="relu", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed)),
+        layers.Dense(best_params["neurons_1st_layer"], activation="relu", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed)),
         layers.Dropout(best_params['dropout_rate']),  
-        layers.Dense(64, activation="relu", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed)),
+        layers.Dense(best_params["neurons_2nd_layer"], activation="relu", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed)),
         layers.Dropout(best_params['dropout_rate']),
         layers.Dense(num_classes, activation="softmax", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed))
         ]
@@ -66,9 +50,8 @@ def multilayer_perceptron(X_train_dl, X_test_dl,y_train_dl,
     print(sequential_model.summary())
     # Define the metrics
     metrics_ = [
-      keras.metrics.BinaryCrossentropy(name='categorical_crossentropy'),  # same as model's loss
+      keras.metrics.CategoricalCrossentropy(name='categorical_crossentropy'),  # same as model's loss
       keras.metrics.CategoricalAccuracy(name="categorical_accuracy", dtype=None),
-      keras.metrics.BinaryAccuracy(name='accuracy'),
       keras.metrics.Precision(name='precision'),
       keras.metrics.Recall(name='recall'),
       keras.metrics.AUC(name='auc'),
@@ -83,33 +66,33 @@ def multilayer_perceptron(X_train_dl, X_test_dl,y_train_dl,
                              loss='categorical_crossentropy',
                              metrics=metrics_)
     # Fit the model
-    sequential_model_fit = sequential_model.fit(x=X_train_dl, y=y_train_dl_reshaped,
-                                                epochs=epochs, batch_size=best_params['batch_size'],
-                                                validation_data=(X_test_dl, y_test_dl_reshaped),
-                                                validation_split = 0.25,
+    sequential_model_fit = sequential_model.fit(x=X_train_dl, y=y_train_dl,
+                                                epochs=best_params['epochs'], batch_size=best_params['batch_size'],
+                                                validation_data=(X_val_dl, y_val_dl),
                                                 verbose=0, shuffle=True)
 
     
     # Evaluate the model
-    evaluation_results = sequential_model.evaluate(X_test_dl, y_test_dl_reshaped, verbose=0)
+    evaluation_results = sequential_model.evaluate(X_test_dl, y_test_dl, verbose=0)
     print("Evaluation Results:", evaluation_results)
 
     # Make predictions
     y_pred = np.argmax(sequential_model.predict(X_test_dl), axis=-1)
 
     # Print accuracy, confusion matrix, classification report
-    print("Accuracy:", accuracy_score(y_test_dl, y_pred), '\n')
-    print("Balanced Accuracy", balanced_accuracy_score(y_test_dl, y_pred), '\n')
-    print("Confusion Matrix:\n", confusion_matrix(y_test_dl, y_pred), '\n')
-    print("Classification Report:\n", classification_report(y_test_dl, y_pred, target_names=target_classes_dl), '\n')
+    y_test_labels = np.argmax(y_test_dl, axis=-1)
+    print("Accuracy:", accuracy_score(y_test_labels, y_pred), '\n')
+    print("Balanced Accuracy", balanced_accuracy_score(y_test_labels, y_pred), '\n')
+    print("Confusion Matrix:\n", confusion_matrix(y_test_labels, y_pred), '\n')
+    print("Classification Report:\n", classification_report(y_test_labels, y_pred, target_names=target_names), '\n')
 
     # Plot the performance of Sequencial Model per epoch
     # Define epochs as a list
-    epochs_list = list(range(1, len(metrics_) + 1)) 
+    epochs_list = list(range(1, best_params["epochs"] + 1)) 
 
     # Define the metrics for the performance of the model
-    metrics_list = ['loss', 'val_loss', 'accuracy', 
-            'val_accuracy', 'precision', 'val_precision', 
+    metrics_list = ['loss', 'val_loss', 'categorical_accuracy', 
+            'val_categorical_accuracy', 'precision', 'val_precision', 
             'recall', 'val_recall', 'auc', 'val_auc']
 
     # Create an empty list to store the results
@@ -131,10 +114,10 @@ def multilayer_perceptron(X_train_dl, X_test_dl,y_train_dl,
     # Show the figure
     fig.show()
 
-    return sequential_model, X_val_dl, y_val_dl, y_val_dl_reshaped, target_classes_dl
+    return sequential_model, X_val_dl, y_val_dl, target_names
 
 
-def validate_multilayer_perceptron(X_val_dl, y_val_dl, y_val_dl_reshaped, sequential_model, target_classes_dl):
+def validate_multilayer_perceptron(X_val_dl, y_val_dl_reshaped, sequential_model, target_classes_dl):
     """
     Validate the Multilayer Perceptron model using validation data
     and the sequential model you used in the training set
@@ -147,10 +130,11 @@ def validate_multilayer_perceptron(X_val_dl, y_val_dl, y_val_dl_reshaped, sequen
     y_pred = np.argmax(sequential_model.predict(X_val_dl), axis=-1)
 
     # Calculate confusion matrix and classification report
-    val_accuracy = accuracy_score(y_val_dl, y_pred)
-    val_balanced_accuracy = balanced_accuracy_score(y_val_dl, y_pred)
-    val_confusion_matrix = confusion_matrix(y_val_dl, y_pred)
-    val_classification_report = classification_report(y_val_dl, y_pred, target_names=target_classes_dl)
+    y_val_labels = np.argmax(y_val_dl_reshaped, axis=-1)
+    val_accuracy = accuracy_score(y_val_labels, y_pred)
+    val_balanced_accuracy = balanced_accuracy_score(y_val_labels, y_pred)
+    val_confusion_matrix = confusion_matrix(y_val_labels, y_pred)
+    val_classification_report = classification_report(y_val_labels, y_pred, target_names=target_classes_dl)
 
     # Print validation accuracy, confusion matrix, and classification report
     print("Validation Accuracy:", val_accuracy, '\n')
