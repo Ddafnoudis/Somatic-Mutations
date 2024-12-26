@@ -1,7 +1,5 @@
 # Seed for reproducibility
 SEED: 42
-# MLP: Epochs, batch size
-EPOCHS: 30
 
 # Data path
 WORK_DIR: 'Somatic-Mutations/'
@@ -25,14 +23,10 @@ MLP_RESULTS: 'result_files/mlp_folder/validation_results.txt'
 
 # MLP Hyperparameters optimization
 PARAM_GRID: {
-  "dropout_rate": [0.2], 
-  "learning_rate": [0.004],
-  "batch_size": [100]
+  "dropout_rate": [0.1, 0.2, 0.3, 0.4, 0.5], 
+  "learning_rate": [0.001, 0.002, 0.003, 0.004, 0.005],
+  "batch_size": [35, 70, 100, 200, 500],
+  "epochs": [5, 10, 15, 20, 30],
+  "neurons_1st_layer": [16, 32, 64, 128, 256],
+  "neurons_2nd_layer": [32, 64, 128, 256, 512]
 }
-
-
-# PARAM_GRID: {
-#   "dropout_rate": [0.2, 0.3, 0.4, 0.5], 
-#   "learning_rate": [0.001, 0.002, 0.003, 0.004],
-#   "batch_size": [35, 70, 100]
-# }
