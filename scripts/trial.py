@@ -62,14 +62,7 @@ def grid_search(X_train_dl, X_test_dl, y_train_dl, y_test_dl, num_classes, seed,
 
                             # Compute balanced accuracy
                             score = balanced_accuracy_score(y_test_labels, y_pred_labels)
-                            print(f"Params:
-                                  \n dropout_rate={dropout_rate}, 
-                                  \nlearning_rate={learning_rate},
-                                  \nbatch_size={batch_size},
-                                  \nBalanced Accuracy={score},
-                                  \nepochs={epochs}, 
-                                  \nneurons_1st_layer={neurons_1st}, 
-                                  \nneurons_2nd_layer={neurons_2nd}")
+                            print(f"Params:\ndropout_rate={dropout_rate},\nlearning_rate={learning_rate},\nbatch_size={batch_size},\nBalanced Accuracy={score},\nepochs={epochs},\nneurons_1st_layer={neurons_1st},\nneurons_2nd_layer={neurons_2nd}")
 
                             # Update best parameters
                             if score > best_score:
@@ -83,7 +76,6 @@ def grid_search(X_train_dl, X_test_dl, y_train_dl, y_test_dl, num_classes, seed,
 
     print(f"Best Balanced Accuracy: {best_score}")
     print(f"Best Parameters: {best_params}")
-
 
     return best_params
 
