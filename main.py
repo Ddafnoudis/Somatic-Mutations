@@ -15,7 +15,7 @@ def main():
                         cross_val = config['CROSS_VAL'], 
                         accuracy = config['ACCURACY'], report_rf = config["REPORT_RF"],
                         confusion_mtx = config["CONFUSION_MTX"], mlp_results=config["MLP_RESULTS"],
-                        param_grid=config["PARAM_GRID"])
+                        epochs=config["EPOCHS"], param_grid=config["PARAM_GRID"])
 
 
 if __name__ == "__main__":
