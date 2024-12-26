@@ -1,5 +1,8 @@
 # Seed for reproducibility
 SEED: 42
+# MLP: Epochs, batch size
+EPOCHS: 30
+
 # Data path
 WORK_DIR: 'Somatic-Mutations/'
 DATASET: 'datasets/full_data.tsv'
@@ -19,3 +22,17 @@ REPORT_RF: 'result_files/class_report.txt'
 CONFUSION_MTX: 'result_files/confusion_mtx.txt'
 # Multilayer Perceptron
 MLP_RESULTS: 'result_files/mlp_folder/validation_results.txt'
+
+# MLP Hyperparameters optimization
+PARAM_GRID: {
+  "dropout_rate": [0.2], 
+  "learning_rate": [0.004],
+  "batch_size": [100]
+}
+
+
+# PARAM_GRID: {
+#   "dropout_rate": [0.2, 0.3, 0.4, 0.5], 
+#   "learning_rate": [0.001, 0.002, 0.003, 0.004],
+#   "batch_size": [35, 70, 100]
+# }
