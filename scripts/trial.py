@@ -1,14 +1,10 @@
 import os
 import random
 import keras
-import tensorflow as tf
 import numpy as np
-import pandas as pd
-from sklearn.utils import shuffle
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.metrics import balanced_accuracy_score
+import tensorflow as tf
 from keras import layers
+from sklearn.metrics import balanced_accuracy_score
 
 
 # Set seeds for reproducibility
@@ -16,38 +12,18 @@ random.seed(42)
 np.random.seed(42)
 tf.random.set_seed(42)
 
-# Ensure TensorFlow operations are deterministic
-os.environ['TF_DETERMINISTIC_OPS'] = '1'
-os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact reproducibility
+# # Ensure TensorFlow operations are deterministic
+# os.environ['TF_DETERMINISTIC_OPS'] = '1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact reproducibility
 
 
 
 # Define the grid search function
-def grid_search(X_train_dl, X_test_dl,y_train_dl, y_test_dl, X_val_dl, y_val_dl, target_classes_dl, seed, param_grid):
-    # feat_dl = feat_dl.astype(str)
-
-    # # One-hot encode features
-    # feat_dl = pd.get_dummies(feat_dl, drop_first=True, dtype=int)
-    # print(f"Feature shape for MLP training: {feat_dl.shape}")
-    
-    # # Label Encoding for target
-    # lb = LabelEncoder()
-    # tar_dl_enc = lb.fit_transform(tar_dl)
-
-    # # Shuffle the data
-    # feat_dl, tar_dl_enc = shuffle(feat_dl, tar_dl_enc, random_state=seed)
-
-    # # Define the size of the features
+def grid_search(X_train_dl, X_test_dl,y_train_dl, y_test_dl, X_val_dl, 
+                y_val_dl, target_classes_dl, seed, param_grid, epochs):
+   
+    # Define the size of the features
     feature_size = len(X_train_dl.columns)
-
-    # # Five-fold stratification
-    # skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
-    # for train_index, test_index in skf.split(feat_dl, tar_dl_enc):
-    #     X_train_dl, X_test_dl = feat_dl.iloc[train_index], feat_dl.iloc[test_index]
-    #     y_train_dl, y_test_dl = tar_dl_enc[train_index], tar_dl_enc[test_index]
-
-    # # Define the validation set
-    # X_train_dl, X_val_dl, y_train_dl, y_val_dl = train_test_split(X_train_dl, y_train_dl, test_size=0.25, random_state=seed)
 
     # Number of classes
     num_classes = len(np.unique(target_classes_dl))
@@ -73,11 +49,11 @@ def grid_search(X_train_dl, X_test_dl,y_train_dl, y_test_dl, X_val_dl, y_val_dl,
                 # Build the model
                 model = keras.Sequential([
                     layers.Input(shape=(feature_size, )),
-                    layers.Dense(64, activation="relu"),
+                    layers.Dense(32, activation="relu", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed)),
                     layers.Dropout(dropout_rate),
-                    layers.Dense(128, activation="relu"),
+                    layers.Dense(64, activation="relu", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed)),
                     layers.Dropout(dropout_rate),
-                    layers.Dense(num_classes, activation="softmax")
+                    layers.Dense(num_classes, activation="softmax", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed))
                 ])
 
                 # Compile the model
@@ -88,7 +64,7 @@ def grid_search(X_train_dl, X_test_dl,y_train_dl, y_test_dl, X_val_dl, y_val_dl,
                 )
 
                 # Train the model
-                model.fit(X_train_dl, y_train_dl_reshaped, epochs=2, batch_size=batch_size, verbose=2, shuffle=True)
+                model.fit(X_train_dl, y_train_dl_reshaped, epochs=epochs, batch_size=batch_size, verbose=2, shuffle=True)
 
                 # Predict on the test set
                 y_pred = model.predict(X_test_dl)

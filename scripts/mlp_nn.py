@@ -6,13 +6,9 @@ import random
 import sys
 import keras
 import numpy as np
-import pandas as pd
 import tensorflow as tf
 from keras import layers
-from sklearn.utils import shuffle
 import plotly.graph_objects as go
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, balanced_accuracy_score, classification_report
 
 
@@ -23,13 +19,16 @@ random.seed(42)
 np.random.seed(42)
 tf.random.set_seed(42)
 
-# Ensure TensorFlow operations are deterministic
-os.environ['TF_DETERMINISTIC_OPS'] = '1'
-os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact reproducibility
+# # Ensure TensorFlow operations are deterministic
+# os.environ['TF_DETERMINISTIC_OPS'] = '1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact reproducibility
 
 
 
-def multilayer_perceptron(X_train_dl, X_test_dl,y_train_dl, y_test_dl, X_val_dl, y_val_dl, target_classes_dl, seed, best_params):
+def multilayer_perceptron(X_train_dl, X_test_dl,y_train_dl, 
+                          y_test_dl, X_val_dl, y_val_dl, 
+                          target_classes_dl, seed, best_params,
+                          epochs):
     """
     Classification process using Multilayer Perceptron
     """
@@ -51,18 +50,15 @@ def multilayer_perceptron(X_train_dl, X_test_dl,y_train_dl, y_test_dl, X_val_dl,
     # Define the size of the features
     feature_size = len(X_train_dl.columns)
 
-    # Define the epochs
-    epochs = 30
-    
     # Define the Neural Network structure using layers and dropout rate
     sequential_model = keras.Sequential(
         [
         layers.Input(shape=(feature_size, )),
-        layers.Dense(32, activation="relu"),
+        layers.Dense(32, activation="relu", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed)),
         layers.Dropout(best_params['dropout_rate']),  
-        layers.Dense(64, activation="relu"),
+        layers.Dense(64, activation="relu", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed)),
         layers.Dropout(best_params['dropout_rate']),
-        layers.Dense(3, activation="softmax")
+        layers.Dense(num_classes, activation="softmax", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed))
         ]
     )
 
