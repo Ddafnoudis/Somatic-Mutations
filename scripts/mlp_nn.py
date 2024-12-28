@@ -20,9 +20,9 @@ random.seed(42)
 np.random.seed(42)
 tf.random.set_seed(42)
 
-# # Ensure TensorFlow operations are deterministic
-# os.environ['TF_DETERMINISTIC_OPS'] = '1'
-# os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact reproducibility
+# Ensure TensorFlow operations are deterministic
+os.environ['TF_DETERMINISTIC_OPS'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact reproducibility
 
 
 
@@ -39,11 +39,11 @@ def multilayer_perceptron(X_train_dl, X_test_dl, y_train_dl, epochs,
     sequential_model = keras.Sequential(
         [
         layers.Input(shape=(feature_size, )),
-        layers.Dense(best_params["neurons_1st_layer"], activation="relu", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed)),
+        layers.Dense(best_params["neurons_1st_layer"], activation="relu", kernel_initializer=keras.initializers.GlorotNormal(seed=seed)),
         layers.Dropout(best_params['dropout_rate']),  
-        layers.Dense(best_params["neurons_2nd_layer"], activation="relu", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed)),
+        layers.Dense(best_params["neurons_2nd_layer"], activation="relu", kernel_initializer=keras.initializers.GlorotNormal(seed=seed)),
         layers.Dropout(best_params['dropout_rate']),
-        layers.Dense(num_classes, activation="softmax", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed))
+        layers.Dense(num_classes, activation="softmax", kernel_initializer=keras.initializers.GlorotNormal(seed=seed))
         ]
     )
 
@@ -67,16 +67,22 @@ def multilayer_perceptron(X_train_dl, X_test_dl, y_train_dl, epochs,
                              loss='categorical_crossentropy',
                              metrics=metrics_)
     
+    # Define the early stopping
     earlystopping = callbacks.EarlyStopping(
-                                    monitor="val_loss",
-                                    mode="min",
-                                    patience=5,
-                                    restore_best_weights=True)
+            # Quantity to be monitored.
+            monitor="val_loss",
+            # Stop training if the quantity has stopped decreasing.
+            mode="min",
+            # Number of epochs with no improvement
+            patience=5,
+            # Restore the best weights
+            restore_best_weights=True)
+    
     # Fit the model
     sequential_model_fit = sequential_model.fit(x=X_train_dl, y=y_train_dl,
                                                 epochs=epochs, batch_size=best_params['batch_size'],
                                                 validation_data=(X_val_dl, y_val_dl),
-                                                verbose=0, shuffle=True,
+                                                verbose=2,
                                                 callbacks=[earlystopping])
 
     

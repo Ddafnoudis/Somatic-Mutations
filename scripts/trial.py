@@ -2,6 +2,7 @@
 A scripts that searches the best hyperparameters for a 
 multilayer perceptron model.
 """
+import os
 import keras
 import random
 import numpy as np
@@ -17,9 +18,9 @@ random.seed(42)
 np.random.seed(42)
 tf.random.set_seed(42)
 
-# # Ensure TensorFlow operations are deterministic
-# os.environ['TF_DETERMINISTIC_OPS'] = '1'
-# os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact reproducibility
+# Ensure TensorFlow operations are deterministic
+os.environ['TF_DETERMINISTIC_OPS'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact reproducibility
 
 
 
@@ -47,28 +48,46 @@ def grid_search(X_train_dl, X_test_dl, y_train_dl, y_test_dl, num_classes, seed,
                             # Build the model
                             model = keras.Sequential([
                                 layers.Input(shape=(feature_size, )),
-                                layers.Dense(neurons_1st, activation="relu", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed)),
+                                layers.Dense(neurons_1st, activation="relu", kernel_initializer=keras.initializers.he_normal(seed=seed)),
                                 layers.Dropout(dropout_rate),
-                                layers.Dense(neurons_2nd, activation="relu", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed)),
+                                layers.Dense(neurons_2nd, activation="relu", kernel_initializer=keras.initializers.he_normal(seed=seed)),
                                 layers.Dropout(dropout_rate),
-                                layers.Dense(num_classes, activation="softmax", kernel_initializer=tf.keras.initializers.GlorotNormal(seed=seed))
+                                layers.Dense(num_classes, activation="softmax", kernel_initializer=keras.initializers.he_normal(seed=seed))
                             ])
+
+                            # Define the metrics
+                            metrics_ = [
+                            keras.metrics.CategoricalCrossentropy(name='categorical_crossentropy'),  # same as model's loss
+                            keras.metrics.CategoricalAccuracy(name="categorical_accuracy", dtype=None),
+                            keras.metrics.Precision(name='precision'),
+                            keras.metrics.Recall(name='recall'),
+                            keras.metrics.AUC(name='auc'),
+                            keras.metrics.AUC(name='prc', curve='PR'), # precision-recall curve
+                            ]
 
                             # Compile the model
                             model.compile(
                                 optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
                                 loss='categorical_crossentropy',
-                                metrics=['accuracy']
+                                metrics=metrics_
                             )
-
+                            
+                            # Define the early stopping
                             earlystopping = callbacks.EarlyStopping(
+                                    # Quantity to be monitored.
                                     monitor="val_loss",
+                                    # Stop training if the quantity has stopped decreasing.
                                     mode="min",
+                                    # Number of epochs with no improvement
                                     patience=5,
+                                    # Restore the best weights
                                     restore_best_weights=True)
 
                             # Train the model
-                            model.fit(X_train_dl, y_train_dl, epochs=epochs, batch_size=batch_size, verbose=2, shuffle=True, callbacks=[earlystopping])
+                            model.fit(X_train_dl, y_train_dl, 
+                                      epochs=epochs, batch_size=batch_size, 
+                                      verbose=2,  
+                                      callbacks=[earlystopping])
 
                             # Predict on the test set
                             y_pred = model.predict(X_test_dl)
