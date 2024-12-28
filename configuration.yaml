@@ -20,7 +20,7 @@ REPORT_RF: 'result_files/class_report.txt'
 CONFUSION_MTX: 'result_files/confusion_mtx.txt'
 
 # Epochs
-EPOCHS: 30
+EPOCHS: 20
 
 # MLP Hyperparameters optimization
 PARAM_GRID: {
@@ -29,6 +29,15 @@ PARAM_GRID: {
   "batch_size": [35, 70, 100, 200, 500],
   "neurons_1st_layer": [16, 32, 64, 128, 256],
   "neurons_2nd_layer": [32, 64, 128, 256, 512]
+}
+
+# Final Parameters
+PARAM_GRID: {
+  "dropout_rate": [0.1], 
+  "learning_rate": [0.002],
+  "batch_size": [35],
+  "neurons_1st_layer": [16],
+  "neurons_2nd_layer": [32]
 }
 
 # Multilayer Perceptron
