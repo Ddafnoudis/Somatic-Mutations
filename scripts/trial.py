@@ -115,6 +115,10 @@ def grid_search(X_train_dl, X_test_dl, y_train_dl, y_test_dl, num_classes, seed,
     # Print the best parameters
     print(f"Best Parameters: {best_params}")
 
+    with open("result_files/best_params.txt", "w") as file:
+        file.write(f"Best Balanced Accuracy: {best_score}\n")
+        file.write(f"Best Parameters: {best_params}\n")
+
     return best_params
 
 
