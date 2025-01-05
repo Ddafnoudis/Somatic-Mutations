@@ -22,10 +22,7 @@ def encode_data(feat, tar, seed):
     target_enc = lb.fit_transform(tar)
     target_enc = pd.DataFrame(target_enc, columns=["Disease_Type"])
     # Shuffle the data
-    features_enc, target_enc = shuffle(features_enc, target_enc, random_state=seed)
-    # print(f"Encoding target: {target_enc}");exit()
-    # # Concatenate encoded features and target
-    # data = pd.concat([features_enc, target_enc], axis=1)    
+    features_enc, target_enc = shuffle(features_enc, target_enc, random_state=seed)   
     
     return features_enc, target_enc
 
@@ -41,7 +38,7 @@ def stratified_k_fold(feat_enc, tar_enc, target_classes_dl, seed):
         y_train, y_test = tar_enc.iloc[train_index], tar_enc.iloc[test_index]
     
     # Validation set
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25,  random_state=seed)
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25, random_state=seed)
 
     # Define the number of classes
     num_classes = len(np.unique(target_classes_dl))
