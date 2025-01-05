@@ -10,17 +10,19 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import balanced_accuracy_score, classification_report, confusion_matrix, roc_curve, auc
 
 
-def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val, y_val, target_classes, seed):
-    # Print the shapes of featues 
-    print(f"Shapes of: \n*X_train{X_train.shape}\n *X_test {X_test.shape}\n")
-    # Define the number of decision trees
-    optimal_decision_trees = 100
-    # Define parameters of random forest moder
-    rfc = RandomForestClassifier(n_estimators=optimal_decision_trees, random_state=seed)
+def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val, y_val, target_classes, seed, rf_best_params):
+    """
+    Random Forest Classification
+    """
+    # Pass the parameters to the model
+    rfc = RandomForestClassifier(n_estimators=rf_best_params['n_estimators'], 
+                                 max_features=rf_best_params['max_features'],
+                                 bootstrap=rf_best_params['bootstrap'],
+                                 random_state=seed)
     # Fit the trainin sets
     rfc.fit(X_train, y_train)
-    # Cross-validation score
-    cv_score = cross_val_score(rfc, X_train, y_train, cv=5)
+    # # Cross-validation score
+    # cv_score = cross_val_score(rfc, X_train, y_train, cv=5)
     # Predictions on test set
     y_pred = rfc.predict(X_test)
     # Predictions on validation set
@@ -63,7 +65,7 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
     fig.show()
 
     # Save the results
-    np.savetxt('result_files/cv_score.txt', cv_score)
+    # np.savetxt('result_files/cv_score.txt', cv_score)
     
     with open('result_files/balanced_accuracy.txt', "w") as f:
         f.write(str(b_accuracy))
@@ -131,7 +133,7 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
     )
     fig.show()
 
-    return cv_score, b_accuracy, report, cm, b_accuracy_val, report_val, cm_val
+    return b_accuracy, report, cm, b_accuracy_val, report_val, cm_val
 
 
 if __name__=="__main__":
