@@ -10,16 +10,17 @@ from scripts.check_shapes import check_shape
 from scripts.lazy_predict import lazy_predict
 from scripts.cleaning_datasets import clean_dataframes
 from scripts.encoding import encode_data, stratified_k_fold
+from scripts.hyperparameter_tuning import random_forest_tuning
 from scripts.random_forest import random_forest_train_test_validation 
 from scripts.mlp_nn import multilayer_perceptron, validate_multilayer_perceptron
 
 
-def condition_statement(working_dir: Path, output_dir: Path, 
-                        data: Path, corr_image: Path, corr_results: Path, 
-                        lzp_results: Path, cross_val: Path, 
-                        accuracy: Path, report_rf: Path, 
-                        confusion_mtx: Path, seed: int,
-                        mlp_results: Path, epochs: int, param_grid: Dict):
+def condition_statement(output_dir: Path, data: Path, 
+                        corr_image: Path, corr_results: Path, 
+                        lzp_results: Path, report_rf: Path, 
+                        seed: int, best_params: Path,
+                        mlp_results: Path, epochs: int, param_grid: Dict,
+                        rf_parameters: Dict):
     """
     Create conditions statements for the presence of the
     results files you need to have in the result_files/
@@ -70,32 +71,37 @@ def condition_statement(working_dir: Path, output_dir: Path,
                 y_train=y_train, y_test=y_test, 
                 X_val=X_val, y_val=y_val, y_train_dl_reshaped=y_train_dl_reshaped,
                 y_test_dl_reshaped=y_test_dl_reshaped, y_val_dl_reshaped=y_val_dl_reshaped)
+    # Random Forest hyperparameter tuning
+    print("Starting Random Forest parameters tuning process!\n")
+    rf_best_params = random_forest_tuning(X_train=X_train, y_train=y_train, seed=seed, forest_params=rf_parameters)
     # Results of Random Forest
     if report_rf.exists():
         print(f"Random Forest has been completed. Location: {output_dir}/\n")
     else:
-        print("Starting Random Forest")
         # Perform a Random Forest classification
+        print("Random Forest classification begins!\n")
         random_forest_train_test_validation(X_train=X_train, y_train=y_train,
                                             X_test=X_test, y_test=y_test, 
                                             X_val=X_val, y_val=y_val, 
-                                            target_classes=target_classes, seed=seed)
-    # # Results of lazy predict
-    # if lzp_results.exists():
-    #     print(f"Lazy predict has done its predictions! Location: {output_dir}/\n")
-    # else:
-    #     print("Start Lazy Predict classification!")
-    #     # Perform lazy predict classification 
-    #     lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test, seed=seed)
+                                            target_classes=target_classes, 
+                                            rf_best_params=rf_best_params,
+                                            seed=seed)
+    # Results of lazy predict
+    if lzp_results.exists():
+        print(f"Lazy predict has done its predictions! Location: {output_dir}/\n")
+    else:
+        # Perform lazy predict classification 
+        print("Start Lazy Predict classification!")
+        lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test, seed=seed)
 
-    # MLP learning rate optimization
-    # number = learning_rate_optimization(feat_dl=features, tar_dl=target, target_classes_dl=target_classes, seed=seed)
-    
-    # MLP grid search optimization
-    best_params = grid_search(X_train_dl=X_train, X_test_dl=X_test, epochs=epochs,
-                              y_train_dl=y_train_dl_reshaped, y_test_dl=y_test_dl_reshaped,
-                              num_classes=num_classes, seed=seed, 
-                              param_grid=param_grid)
+    # Grid search optimization
+    if best_params.exists():
+        print("Best parameters exist!")
+    else:
+        # MLP grid search optimization
+        best_params = grid_search(X_train_dl=X_train, X_test_dl=X_test, epochs=epochs,
+                                  y_train_dl=y_train_dl_reshaped, y_test_dl=y_test_dl_reshaped,
+                                  num_classes=num_classes, seed=seed, param_grid=param_grid)
 
 
     # Multilayer Perceptron (Sequential)
