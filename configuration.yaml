@@ -18,6 +18,7 @@ LZP_RESULTS: 'result_files/lzp_results.tsv'
 # Random Forest results
 CROSS_VAL: 'result_files/cv_score.txt'
 ACCURACY: 'result_files/accuracy.txt'
+RF_BEST_PARAMS: 'result_files/rf_best_params.txt'
 REPORT_RF: 'result_files/class_report.txt'
 CONFUSION_MTX: 'result_files/confusion_mtx.txt'
 # Best parameters
