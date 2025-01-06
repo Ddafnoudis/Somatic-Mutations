@@ -21,8 +21,6 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
                                  random_state=seed)
     # Fit the trainin sets
     rfc.fit(X_train, y_train)
-    # # Cross-validation score
-    # cv_score = cross_val_score(rfc, X_train, y_train, cv=5)
     # Predictions on test set
     y_pred = rfc.predict(X_test)
     # Predictions on validation set
@@ -67,6 +65,7 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
     # Save the results
     # np.savetxt('result_files/cv_score.txt', cv_score)
     
+    # Save the results
     with open('result_files/balanced_accuracy.txt', "w") as f:
         f.write(str(b_accuracy))
 
@@ -78,9 +77,6 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
 
     with open('result_files/class_report_val.txt', "w") as f:
         f.write(report_val)
-
-    np.savetxt('result_files/conf_mtx.txt', cm, fmt="%d")
-    np.savetxt('result_files/conf_mtx_val.txt', cm_val, fmt="%d")
 
     # Roc Curve
     n_classes = len(np.unique(y_val))
@@ -132,6 +128,9 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
     height=600
     )
     fig.show()
+    # Save the plot
+    fig.write_image("result_files/roc_curve.png")
+
 
     return b_accuracy, report, cm, b_accuracy_val, report_val, cm_val
 
