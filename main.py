@@ -11,9 +11,10 @@ def main():
         seed=config["SEED"], data=config["DATASET"], 
         output_dir = config["OUTPUT_DIR"], corr_image =config["CORR_IMAGE"],
         corr_results =config['CORR_RESULTS'], lzp_results = config['LZP_RESULTS'], 
-        report_rf = config["REPORT_RF"], mlp_results=config["MLP_RESULTS"],
-        best_params = config["BEST_PARAMS"], rf_parameters=config["RF_PARAMS"],
-        epochs=config["EPOCHS"], param_grid=config["PARAM_GRID"]
+        report_rf = config["REPORT_RF"], rf_best_parameters=config["RF_BEST_PARAMS"],
+        mlp_results=config["MLP_RESULTS"], best_params = config["BEST_PARAMS"],
+        rf_parameters=config["RF_PARAMS"], epochs=config["EPOCHS"], 
+        param_grid=config["PARAM_GRID"]
         )
 
 
