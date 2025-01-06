@@ -25,6 +25,10 @@ def random_forest_tuning(X_train, y_train, seed: int, forest_params: Dict)-> Dic
     # Best parameters
     rf_best_params = rfc_search.best_params_
     print(rf_best_params)
+
+    # Save the results
+    with open("result_files/rf_best_params.txt", "w") as f:
+        f.write(str(rf_best_params))
     
     return rf_best_params
 
