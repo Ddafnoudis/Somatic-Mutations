@@ -18,8 +18,9 @@ from scripts.mlp_nn import multilayer_perceptron, validate_multilayer_perceptron
 def condition_statement(output_dir: Path, data: Path, 
                         corr_image: Path, corr_results: Path, 
                         lzp_results: Path, report_rf: Path, 
-                        seed: int, best_params: Path,
-                        mlp_results: Path, epochs: int, param_grid: Dict,
+                        seed: int, best_params: Path, 
+                        rf_best_parameters: Path, mlp_results: Path, 
+                        epochs: int, param_grid: Dict,
                         rf_parameters: Dict):
     """
     Create conditions statements for the presence of the
@@ -71,13 +72,14 @@ def condition_statement(output_dir: Path, data: Path,
                 y_train=y_train, y_test=y_test, 
                 X_val=X_val, y_val=y_val, y_train_dl_reshaped=y_train_dl_reshaped,
                 y_test_dl_reshaped=y_test_dl_reshaped, y_val_dl_reshaped=y_val_dl_reshaped)
-    # Random Forest hyperparameter tuning
-    print("Starting Random Forest parameters tuning process!\n")
-    rf_best_params = random_forest_tuning(X_train=X_train, y_train=y_train, seed=seed, forest_params=rf_parameters)
+    
     # Results of Random Forest
-    if report_rf.exists():
+    if report_rf.exists() or rf_best_params.exists():
         print(f"Random Forest has been completed. Location: {output_dir}/\n")
     else:
+        # Random Forest hyperparameter tuning
+        print("Starting Random Forest parameters tuning process!\n")
+        rf_best_params = random_forest_tuning(X_train=X_train, y_train=y_train, seed=seed, forest_params=rf_parameters)
         # Perform a Random Forest classification
         print("Random Forest classification begins!\n")
         random_forest_train_test_validation(X_train=X_train, y_train=y_train,
