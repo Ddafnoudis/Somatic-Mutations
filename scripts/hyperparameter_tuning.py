@@ -10,8 +10,6 @@ def random_forest_tuning(X_train, y_train, seed: int, forest_params: Dict)-> Dic
     """
     Tuning process for Random Forest
     """
-    best_score = 0
-    
     # Instantiate the Random Forest Classifier
     rfc = RandomForestClassifier()
 
