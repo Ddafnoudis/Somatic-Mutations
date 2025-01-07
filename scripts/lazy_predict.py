@@ -9,7 +9,7 @@ def lazy_predict(X_train, X_test, y_train, y_test, seed):
     Run lazy predict package
     """
     # Define lazy precict classifier
-    lazy_predict_all_data = LazyClassifier(verbose=0, ignore_warnings=False, custom_metric=None, random_state=seed)
+    lazy_predict_all_data = LazyClassifier(verbose=2, ignore_warnings=False, custom_metric=None, random_state=seed)
     # Fit the model
     model_all_data, predictions = lazy_predict_all_data.fit(X_train, X_test, y_train, y_test)
     # Save the model predictions
