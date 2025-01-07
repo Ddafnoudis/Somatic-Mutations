@@ -40,4 +40,4 @@ maftools=2.14.0
 ## Install requirements
 ```bash
 pip install -r requirements.txt
-
+```
