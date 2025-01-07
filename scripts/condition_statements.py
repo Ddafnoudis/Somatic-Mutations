@@ -74,7 +74,7 @@ def condition_statement(output_dir: Path, data: Path,
                 y_test_dl_reshaped=y_test_dl_reshaped, y_val_dl_reshaped=y_val_dl_reshaped)
     
     # Results of Random Forest
-    if report_rf.exists() or rf_best_params.exists():
+    if report_rf.exists() or rf_best_parameters.exists():
         print(f"Random Forest has been completed. Location: {output_dir}/\n")
     else:
         # Random Forest hyperparameter tuning
