@@ -42,4 +42,5 @@ maftools=2.14.0
 pip install -r requirements.txt
 ```
 
-[!NOTE] The ``extract_files.sh`` is a sript in bash that asks you to provide the full path of the stored data and the output directory that you will store the files that you'll work with (mutations and clinical sample).
+> [!NOTE] 
+> The ``extract_files.sh`` is a sript in bash that asks you to provide the full path of the stored data and the output directory that you will store the files that you'll work with (mutations and clinical sample).
