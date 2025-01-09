@@ -43,4 +43,4 @@ pip install -r requirements.txt
 ```
 
 > [!NOTE] 
-> The ``extract_files.sh`` is a sript in bash that asks you to provide the full path of the stored data and the output directory that you will store the files that you'll work with (mutations and clinical sample).
+> The ``extract_files.sh`` is a sript in bash. Provide the full path of the stored data and the full path of the output directory. The output directory should be the folder with the extracted data files (mutations and clinical sample).
