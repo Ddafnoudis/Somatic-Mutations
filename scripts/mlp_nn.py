@@ -26,9 +26,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact re
 
 
 
-def multilayer_perceptron(X_train_dl, X_test_dl, y_train_dl, epochs,
-                          y_test_dl, X_val_dl, y_val_dl, 
-                          num_classes, target_names, seed, best_params):
+def multilayer_perceptron(X_train_dl, X_val_dl, X_test_dl, y_train_dl, y_val_dl, y_test_dl, epochs, num_classes, target_names, seed, best_params):
     """
     Classification process using Multilayer Perceptron
     """
@@ -69,13 +67,9 @@ def multilayer_perceptron(X_train_dl, X_test_dl, y_train_dl, epochs,
     
     # Define the early stopping
     earlystopping = callbacks.EarlyStopping(
-            # Quantity to be monitored.
             monitor="val_loss",
-            # Stop training if the quantity has stopped decreasing.
             mode="min",
-            # Number of epochs with no improvement
             patience=5,
-            # Restore the best weights
             restore_best_weights=True)
     
     # Fit the model
@@ -86,11 +80,11 @@ def multilayer_perceptron(X_train_dl, X_test_dl, y_train_dl, epochs,
                                                 callbacks=[earlystopping])
 
     
-    # Evaluate the model
+    # Evaluate the model on the test set
     evaluation_results = sequential_model.evaluate(X_test_dl, y_test_dl, verbose=0)
     print("Evaluation Results:", evaluation_results)
 
-    # Make predictions
+    # Make predictions on the test set
     y_pred = np.argmax(sequential_model.predict(X_test_dl), axis=-1)
 
     # Print accuracy, confusion matrix, classification report
@@ -100,32 +94,23 @@ def multilayer_perceptron(X_train_dl, X_test_dl, y_train_dl, epochs,
     print("Confusion Matrix:\n", confusion_matrix(y_test_labels, y_pred), '\n')
     print("Classification Report:\n", classification_report(y_test_labels, y_pred, target_names=target_names), '\n')
 
-    # Plot the performance of Sequencial Model per epoch
-    # Define epochs as a list
+    # Plot the performance of Sequential Model per epoch
     epochs_list = list(range(1, best_params["epochs"] + 1)) 
-
-    # Define the metrics for the performance of the model
     metrics_list = ['loss', 'val_loss', 'categorical_accuracy', 
-            'val_categorical_accuracy', 'precision', 'val_precision', 
-            'recall', 'val_recall', 'auc', 'val_auc']
-
-    # Create an empty list to store the results
+                    'val_categorical_accuracy', 'precision', 'val_precision', 
+                    'recall', 'val_recall', 'auc', 'val_auc']
     results = []
 
-    # Iterate over metrics
     for metric in metrics_list:
         lines = go.Scatter(x=epochs_list, y=sequential_model_fit.history[metric], mode='lines+markers', name=metric.replace('_', ' ').title())
         results.append(lines)
-    # Display the titles
     layout = go.Layout(
         title='Multilayer Perceptron Performance',
         xaxis=dict(title='Epochs'),
         yaxis=dict(title='Metrics'),
         showlegend=True
     )
-    # Unite the figure's information
     fig = go.Figure(data=results, layout=layout)
-    # Show the figure
     fig.show()
 
     return sequential_model, X_val_dl, y_val_dl, target_names
@@ -140,7 +125,7 @@ def validate_multilayer_perceptron(X_val_dl, y_val_dl_reshaped, sequential_model
     evaluation_results = sequential_model.evaluate(X_val_dl, y_val_dl_reshaped, verbose=0)
     print(f" Evaluation results:\n {evaluation_results}\n")
     
-    # Make predictions
+    # Make predictions on the validation set
     y_pred = np.argmax(sequential_model.predict(X_val_dl), axis=-1)
 
     # Calculate confusion matrix and classification report
@@ -157,7 +142,6 @@ def validate_multilayer_perceptron(X_val_dl, y_val_dl_reshaped, sequential_model
     print("Classification Report:\n", val_classification_report, '\n')
 
     # Save performance metrics to a text file
-    # if folder doesn't exist makedir 
     if not os.path.exists("result_files/mlp_folder"):
         os.makedirs("result_files/mlp_folder")
     with open("result_files/mlp_folder/validation_results.txt", "w", encoding="utf-8") as file:
@@ -167,8 +151,6 @@ def validate_multilayer_perceptron(X_val_dl, y_val_dl_reshaped, sequential_model
         file.write("Classification Report:\n{}\n".format(val_classification_report))
 
     return val_accuracy, val_confusion_matrix, val_classification_report
-
-
 if __name__ == "__main__":
     multilayer_perceptron()
     validate_multilayer_perceptron()

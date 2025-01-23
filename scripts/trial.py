@@ -24,8 +24,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact re
 
 
 
-# Define the grid search function
-def grid_search(X_train_dl, X_test_dl, y_train_dl, y_test_dl, num_classes, seed, epochs, param_grid)-> Dict[str, float]:
+def grid_search(X_train_dl, X_val_dl, y_train_dl, y_val_dl, epochs, num_classes, param_grid, seed) -> Dict[str, float]:
     """
     Create a for loop to iterate over the hyperparameters
     and return the best parameters.
@@ -57,12 +56,12 @@ def grid_search(X_train_dl, X_test_dl, y_train_dl, y_test_dl, num_classes, seed,
 
                             # Define the metrics
                             metrics_ = [
-                            keras.metrics.CategoricalCrossentropy(name='categorical_crossentropy'),  # same as model's loss
-                            keras.metrics.CategoricalAccuracy(name="categorical_accuracy", dtype=None),
-                            keras.metrics.Precision(name='precision'),
-                            keras.metrics.Recall(name='recall'),
-                            keras.metrics.AUC(name='auc'),
-                            keras.metrics.AUC(name='prc', curve='PR'), # precision-recall curve
+                                keras.metrics.CategoricalCrossentropy(name='categorical_crossentropy'),  # same as model's loss
+                                keras.metrics.CategoricalAccuracy(name="categorical_accuracy", dtype=None),
+                                keras.metrics.Precision(name='precision'),
+                                keras.metrics.Recall(name='recall'),
+                                keras.metrics.AUC(name='auc'),
+                                keras.metrics.AUC(name='prc', curve='PR'), # precision-recall curve
                             ]
 
                             # Compile the model
@@ -74,50 +73,36 @@ def grid_search(X_train_dl, X_test_dl, y_train_dl, y_test_dl, num_classes, seed,
                             
                             # Define the early stopping
                             earlystopping = callbacks.EarlyStopping(
-                                    # Quantity to be monitored.
                                     monitor="val_loss",
-                                    # Stop training if the quantity has stopped decreasing.
                                     mode="min",
-                                    # Number of epochs with no improvement
                                     patience=5,
-                                    # Restore the best weights
                                     restore_best_weights=True)
 
                             # Train the model
                             model.fit(X_train_dl, y_train_dl, 
                                       epochs=epochs, batch_size=batch_size, 
+                                      validation_data=(X_val_dl, y_val_dl),
                                       verbose=2,  
                                       callbacks=[earlystopping])
 
-                            # Predict on the test set
-                            y_pred = model.predict(X_test_dl)
-                            # True labels
-                            y_test_labels = np.argmax(y_test_dl, axis=1) 
-                            # Predicted labels 
+                            # Predict on the validation set
+                            y_pred = model.predict(X_val_dl)
+                            y_val_labels = np.argmax(y_val_dl, axis=1)
                             y_pred_labels = np.argmax(y_pred, axis=1)    
 
                             # Compute the balanced accuracy
-                            score = balanced_accuracy_score(y_test_labels, y_pred_labels)
+                            score = balanced_accuracy_score(y_val_labels, y_pred_labels)
                             print(f"Params:\ndropout_rate={dropout_rate},\nlearning_rate={learning_rate},\nbatch_size={batch_size},\nBalanced Accuracy={score},\nepochs={epochs},\nneurons_1st_layer={neurons_1st},\nneurons_2nd_layer={neurons_2nd}")
 
                             # Update best parameters
                             if score > best_score:
                                 best_score = score
-                                # Update the best parameters
                                 best_params = {'dropout_rate': dropout_rate, 
-                                            'learning_rate': learning_rate, 
-                                            'batch_size': batch_size,
-                                            "epochs": epochs,
-                                            'neurons_1st_layer': neurons_1st,
-                                            'neurons_2nd_layer': neurons_2nd}
-    # Print the best Balanced Accuracy
-    print(f"Best Balanced Accuracy: {best_score}")
-    # Print the best parameters
-    print(f"Best Parameters: {best_params}")
-
-    with open("result_files/best_params.txt", "w") as file:
-        file.write(f"Best Balanced Accuracy: {best_score}\n")
-        file.write(f"Best Parameters: {best_params}\n")
+                                               'learning_rate': learning_rate, 
+                                               'batch_size': batch_size,
+                                               "epochs": epochs,
+                                               'neurons_1st_layer': neurons_1st,
+                                               'neurons_2nd_layer': neurons_2nd}
 
     return best_params
 
