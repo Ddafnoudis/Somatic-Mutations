@@ -107,7 +107,7 @@ def condition_statement(output_dir: Path, data: Path,
                                   seed=seed, param_grid=param_grid)
 
 
-    # Multilayer Perceptron (Sequential)
+    # Multilayer Perceptron (Sequential).
     if mlp_results.exists():
         print("Multilayer Result exist!")
     else:
