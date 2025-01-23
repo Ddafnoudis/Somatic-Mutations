@@ -97,13 +97,14 @@ def condition_statement(output_dir: Path, data: Path,
         lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test, seed=seed)
 
     # Grid search optimization
-    if best_params.exists():
-        print("Best parameters exist!")
+    if os.path.exists(best_params):
+        print("Best params for the MLP exist!")
     else:
         # MLP grid search optimization
-        best_params = grid_search(X_train_dl=X_train, X_test_dl=X_test, epochs=epochs,
-                                  y_train_dl=y_train_dl_reshaped, y_test_dl=y_test_dl_reshaped,
-                                  num_classes=num_classes, seed=seed, param_grid=param_grid)
+        best_params = grid_search(X_train_dl=X_train, X_val_dl=X_val,
+                                  y_train_dl=y_train_dl_reshaped, y_val_dl=y_val_dl_reshaped,
+                                  epochs=epochs, num_classes=num_classes, 
+                                  seed=seed, param_grid=param_grid)
 
 
     # Multilayer Perceptron (Sequential)
