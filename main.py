@@ -14,7 +14,10 @@ def main():
         report_rf = config["REPORT_RF"], rf_best_parameters=config["RF_BEST_PARAMS"],
         mlp_results=config["MLP_RESULTS"], best_params = config["BEST_PARAMS"],
         rf_parameters=config["RF_PARAMS"], epochs=config["EPOCHS"], 
-        param_grid=config["PARAM_GRID"]
+        param_grid=config["PARAM_GRID"], working_gene_dir=config["WORK_GENE_DIR"],
+        dataset=config['DATASET'], gmt_folder=config["GMT_FOLDER"],
+        gene_file_folder=config["GENE_FILES_FOLDER"], hallmark_results=config["HALLMARK_RESULTS"],
+        enr_res_folder=config["ENR_RESULT_FOLDER"]
         )
 
 
