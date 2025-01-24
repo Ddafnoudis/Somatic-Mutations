@@ -27,7 +27,12 @@ def parse_configuration_files(fname) -> Dict[int, str]:
     config['ACCURACY'] = Path(config['ACCURACY'])
     config['REPORT_RF'] = Path(config['REPORT_RF'])
     config['CONFUSION_MTX'] = Path(config['CONFUSION_MTX'])
-    config["MLP_RESULTS"] = Path(config["MLP_RESULTS"])
+    config["MLP_RESULTS"] = Path(config["MLP_RESULTS"]),
+    config['WORK_GENE_DIR'] = Path(config['WORK_GENE_DIR'])
+    config['DATASET'] = Path(config['DATASET'])
+    config['GMT_FOLDER'] = Path(config['GMT_FOLDER'])
+    config['GENE_FILES_FOLDER'] = Path(config['GENE_FILES_FOLDER'])
+    config['HALLMARK_RESULTS'] = Path(config['HALLMARK_RESULTS'])
 
     return config
 

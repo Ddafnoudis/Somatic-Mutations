@@ -2,6 +2,7 @@
 Condition statements
 """
 import os
+import pandas as pd
 from typing import Dict
 from pathlib import Path
 from scripts.trial import grid_search
@@ -13,6 +14,10 @@ from scripts.encoding import encode_data, stratified_k_fold
 from scripts.hyperparameter_tuning import random_forest_tuning
 from scripts.random_forest import random_forest_train_test_validation 
 from scripts.mlp_nn import multilayer_perceptron, validate_multilayer_perceptron
+from scripts_gene_analysis.scripts.gene_list import gene_list_
+from scripts_gene_analysis.scripts.enrich_gene import over_representation_analysis
+from scripts_gene_analysis.scripts.enr_result_p_value import common_pathways
+from scripts_gene_analysis.scripts.enr_result_p_value import enrich_res_sorted_top15
 
 
 def condition_statement(output_dir: Path, data: Path, 
@@ -21,12 +26,42 @@ def condition_statement(output_dir: Path, data: Path,
                         seed: int, best_params: Path, 
                         rf_best_parameters: Path, mlp_results: Path, 
                         epochs: int, param_grid: Dict,
-                        rf_parameters: Dict):
+                        rf_parameters: Dict, working_gene_dir: Path,
+                        dataset: Path, gmt_folder: Path,
+                        gene_file_folder: Path, hallmark_results: Path,
+                        enr_res_folder: Path):
     """
     Create conditions statements for the presence of the
     results files you need to have in the result_files/
     folder
     """
+    # Parse the dataset
+    df_mutations = pd.read_csv(dataset, sep='\t', dtype=object)
+    # Check if the gene_file_folder exists
+    if gene_file_folder.exists():
+        print("gene_file_folder exists!")
+        # Generate files only with genes based on cancer types
+        gene_list_(dataset = df_mutations, gene_file_folder=gene_file_folder)
+        # Over-representation analysis
+        over_representation_analysis(enr_res_folder=enr_res_folder,
+                                    gene_file_folder=gene_file_folder)
+    else:
+        os.mkdir(gene_file_folder)
+        # Generate files only with genes based on cancer types
+        gene_list_(dataset = df_mutations, gene_file_folder=gene_file_folder)
+        # os.mkdir(hallmark_results)
+        os.mkdir(enr_res_folder)
+       # Over-representation analysis
+        over_representation_analysis()
+        
+    # Read the enrichment results for each gene list
+    all_enr_reactome_22 = pd.read_csv("hallmark/ern_res_p_values_15/ALL_gene_list_top_enriched_pathways.tsv", sep="\t", index_col=False)
+    laml_enr_reactome_22 = pd.read_csv("hallmark/ern_res_p_values_15/LAML_gene_list_top_enriched_pathways.tsv", sep="\t", index_col=False)
+    cll_enr_reactome_22 = pd.read_csv("hallmark/ern_res_p_values_15/CLL_gene_list_top_enriched_pathways.tsv", sep="\t", index_col=False)
+
+    # Find the 10 first enriched pathways based on p-values
+    enrich_res_sorted_top15(all_enr_reactome_22, laml_enr_reactome_22, cll_enr_reactome_22)
+    common_pathways(all_enr_reactome_22, laml_enr_reactome_22, cll_enr_reactome_22)
     # Clean data from missing values
     full_data = clean_dataframes()
 
