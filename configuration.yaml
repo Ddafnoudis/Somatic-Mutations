@@ -1,3 +1,21 @@
+#### Upstream analysis ####
+
+# Working directory for mutational analysis
+WORK_GENE_DIR: "scripts_gene_analysis/"
+# Dataset for the analysis of somatic mutations
+DATASET: "datasets/full_columns_data.tsv"
+# GMT file for Hallmark pathways
+GMT_FOLDER: "scripts_gene_analysis/gmt_file/"
+# Directory for Leukemia gene lists
+GENE_FILES_FOLDER: "scripts_gene_analysis/gene_folder/"
+# Output directory for Leukemia gene lists
+HALLMARK_RESULTS: "scripts_gene_analysis/hallmark/"
+# Directory for Over-representation analysis results
+ENR_RESULT_FOLDER: "scripts_gene_analysis/hallmark/ern_res_p_values_15/"
+
+
+#### Downstream analysis ####
+
 # Seed for reproducibility
 SEED: 42
 
@@ -25,6 +43,8 @@ CONFUSION_MTX: 'result_files/confusion_mtx.txt'
 BEST_PARAMS: 'result_files/best_params.txt'
 # Epochs
 EPOCHS: 20
+# Multilayer Perceptron
+MLP_RESULTS: 'result_files/mlp_folder/validation_results.txt'
 
 # MLP Hyperparameters optimization
 PARAM_GRID: {
@@ -51,5 +71,3 @@ PARAM_GRID: {
   "neurons_2nd_layer": [32]
 }
 
-# Multilayer Perceptron
-MLP_RESULTS: 'result_files/mlp_folder/validation_results.txt'
