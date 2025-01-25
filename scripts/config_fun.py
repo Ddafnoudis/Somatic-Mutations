@@ -14,6 +14,16 @@ def parse_configuration_files(fname) -> Dict[int, str]:
     with open(fname) as stream:
         config = yaml.safe_load(stream)
     
+    config['WORK_GENE_DIR'] = Path(config['WORK_GENE_DIR'])
+    config['DATASET'] = Path(config['DATASET'])
+    config['GENE_FILES_FOLDER'] = Path(config['GENE_FILES_FOLDER'])
+    config['HALLMARK_RESULTS'] = Path(config['HALLMARK_RESULTS'])
+    config["ENRICH_FOLDER"] = Path(config["ENRICH_FOLDER"])
+    config["ENR_15_FOLDER"] = Path(config["ENR_15_FOLDER"])
+    config["ENR_PLOTS"] = Path(config["ENR_PLOTS"])
+    config["AML_ENRICH"] = Path(config["AML_ENRICH"])
+    config["AML_ENRICH_15"] = Path(config["AML_ENRICH_15"])
+    config["AML_PLOT"] = Path(config["AML_PLOT"])
     config['SEED'] = int(config['SEED'])
     config['WORK_DIR'] = Path(config['WORK_DIR'])
     config['DATASET'] = Path(config['DATASET'])
@@ -27,13 +37,8 @@ def parse_configuration_files(fname) -> Dict[int, str]:
     config['ACCURACY'] = Path(config['ACCURACY'])
     config['REPORT_RF'] = Path(config['REPORT_RF'])
     config['CONFUSION_MTX'] = Path(config['CONFUSION_MTX'])
-    config["MLP_RESULTS"] = Path(config["MLP_RESULTS"]),
-    config['WORK_GENE_DIR'] = Path(config['WORK_GENE_DIR'])
-    config['DATASET'] = Path(config['DATASET'])
-    config['GMT_FOLDER'] = Path(config['GMT_FOLDER'])
-    config['GENE_FILES_FOLDER'] = Path(config['GENE_FILES_FOLDER'])
-    config['HALLMARK_RESULTS'] = Path(config['HALLMARK_RESULTS'])
-
+    config["MLP_RESULTS"] = Path(config["MLP_RESULTS"])
+    
     return config
 
 

@@ -20,16 +20,23 @@ from scripts_gene_analysis.scripts.enr_result_p_value import common_pathways
 from scripts_gene_analysis.scripts.enr_result_p_value import enrich_res_sorted_top15
 
 
-def condition_statement(output_dir: Path, data: Path, 
+def condition_statement(working_gene_dir: Path,
+                        dataset: Path, 
+                        gene_file_folder: Path,
+                        hallmark_results: Path,
+                        enr_res_folder: Path,
+                        enr_15_folder: Path,
+                        enr_plots: Path,
+                        aml_enrich: Path,
+                        aml_enrich_15: Path,
+                        aml_plot: Path,
+                        output_dir: Path, data: Path, 
                         corr_image: Path, corr_results: Path, 
                         lzp_results: Path, report_rf: Path, 
                         seed: int, best_params: Path, 
                         rf_best_parameters: Path, mlp_results: Path, 
                         epochs: int, param_grid: Dict,
-                        rf_parameters: Dict, working_gene_dir: Path,
-                        dataset: Path, gmt_folder: Path,
-                        gene_file_folder: Path, hallmark_results: Path,
-                        enr_res_folder: Path):
+                        rf_parameters: Dict):
     """
     Create conditions statements for the presence of the
     results files you need to have in the result_files/
@@ -37,31 +44,62 @@ def condition_statement(output_dir: Path, data: Path,
     """
     # Parse the dataset
     df_mutations = pd.read_csv(dataset, sep='\t', dtype=object)
-    # Check if the gene_file_folder exists
-    if gene_file_folder.exists():
-        print("gene_file_folder exists!")
+    # Check if the files exist
+    if aml_enrich.exists() and aml_enrich_15.exists() and aml_plot.exists():
+        print("Upstream analysis has been completed already!\n")
+
+    elif gene_file_folder.exists() and hallmark_results.exists() and enr_res_folder.exists() and enr_15_folder.exists() and enr_plots.exists():
+        print("Folders exist but not the files!")
+        # Generate files only with genes based on cancer types
+        gene_list_(dataset=df_mutations, gene_file_folder=gene_file_folder)
+       # Over-representation analysis
+        over_representation_analysis(enr_res_folder=enr_res_folder,
+                                     enr_plots=enr_plots,
+                                    gene_file_folder=gene_file_folder)
+        
+        # Read the enrichment results for each gene list
+        all_enr_reactome_22 = pd.read_csv(enr_res_folder / "Acute Lymphoblastic Leukemia_enrichment_results.csv", sep="\t", index_col=False)
+        laml_enr_reactome_22 = pd.read_csv(enr_res_folder / "Acute Myeloid Leukemia_enrichment_results.csv", sep="\t", index_col=False)
+        cll_enr_reactome_22 = pd.read_csv(enr_res_folder / "Chronic Lymphocytic Leukemia_enrichment_results.csv", sep="\t", index_col=False)
+
+        # Find the 10 first enriched pathways based on p-values
+        enrich_res_sorted_top15(all_enr_reactome_22=all_enr_reactome_22, 
+                                laml_enr_reactome_22=laml_enr_reactome_22, 
+                                cll_enr_reactome_22=cll_enr_reactome_22, 
+                                enr_15_folder=enr_15_folder)
+        # Find common pathways
+        common_pathways(all_enr_reactome_22, laml_enr_reactome_22, cll_enr_reactome_22)
+
+    else:
+        print("Gene file folders does not exist!")
+        # Create the multiple folders
+        # Define the folders 
+        folders = [gene_file_folder, hallmark_results, enr_res_folder, enr_15_folder, enr_plots]
+        # Iterate over the folders 
+        for folder in folders:
+            # Create them
+            os.mkdir(folder)
         # Generate files only with genes based on cancer types
         gene_list_(dataset = df_mutations, gene_file_folder=gene_file_folder)
         # Over-representation analysis
         over_representation_analysis(enr_res_folder=enr_res_folder,
+                                     enr_plots=enr_plots,
                                     gene_file_folder=gene_file_folder)
-    else:
-        os.mkdir(gene_file_folder)
-        # Generate files only with genes based on cancer types
-        gene_list_(dataset = df_mutations, gene_file_folder=gene_file_folder)
-        # os.mkdir(hallmark_results)
-        os.mkdir(enr_res_folder)
-       # Over-representation analysis
-        over_representation_analysis()
         
-    # Read the enrichment results for each gene list
-    all_enr_reactome_22 = pd.read_csv("hallmark/ern_res_p_values_15/ALL_gene_list_top_enriched_pathways.tsv", sep="\t", index_col=False)
-    laml_enr_reactome_22 = pd.read_csv("hallmark/ern_res_p_values_15/LAML_gene_list_top_enriched_pathways.tsv", sep="\t", index_col=False)
-    cll_enr_reactome_22 = pd.read_csv("hallmark/ern_res_p_values_15/CLL_gene_list_top_enriched_pathways.tsv", sep="\t", index_col=False)
+        # Read the enrichment results for each gene list
+        all_enr_reactome_22 = pd.read_csv(enr_res_folder / "Acute Lymphoblastic Leukemia_enrichment_results.csv", sep="\t", index_col=False)
+        laml_enr_reactome_22 = pd.read_csv(enr_res_folder / "Acute Myeloid Leukemia_enrichment_results.csv", sep="\t", index_col=False)
+        cll_enr_reactome_22 = pd.read_csv(enr_res_folder / "Chronic Lymphocytic Leukemia_enrichment_results.csv", sep="\t", index_col=False)
 
-    # Find the 10 first enriched pathways based on p-values
-    enrich_res_sorted_top15(all_enr_reactome_22, laml_enr_reactome_22, cll_enr_reactome_22)
-    common_pathways(all_enr_reactome_22, laml_enr_reactome_22, cll_enr_reactome_22)
+        # Find the 10 first enriched pathways based on p-values
+        enrich_res_sorted_top15(all_enr_reactome_22=all_enr_reactome_22, 
+                                laml_enr_reactome_22=laml_enr_reactome_22, 
+                                cll_enr_reactome_22=cll_enr_reactome_22, 
+                                enr_15_folder=enr_15_folder)
+        # Find common pathways
+        common_pathways(all_enr_reactome_22, laml_enr_reactome_22, cll_enr_reactome_22)
+
+       
     # Clean data from missing values
     full_data = clean_dataframes()
 
