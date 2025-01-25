@@ -4,15 +4,22 @@
 WORK_GENE_DIR: "scripts_gene_analysis/"
 # Dataset for the analysis of somatic mutations
 DATASET: "datasets/full_columns_data.tsv"
-# GMT file for Hallmark pathways
-GMT_FOLDER: "scripts_gene_analysis/gmt_file/"
 # Directory for Leukemia gene lists
 GENE_FILES_FOLDER: "scripts_gene_analysis/gene_folder/"
 # Output directory for Leukemia gene lists
 HALLMARK_RESULTS: "scripts_gene_analysis/hallmark/"
-# Directory for Over-representation analysis results
-ENR_RESULT_FOLDER: "scripts_gene_analysis/hallmark/ern_res_p_values_15/"
-
+# Directory for Over-representation analysis
+ENRICH_FOLDER: "scripts_gene_analysis/hallmark/ora_results/"
+# Directory for Over-representation analysis: first 15 most significant pathways
+ENR_15_FOLDER: "scripts_gene_analysis/hallmark/ern_res_p_values_15/"
+# Directory for the plots
+ENR_PLOTS: "scripts_gene_analysis/hallmark/enr_plots/"
+# AML files to check if files exist in ENRICH_FOLDER
+AML_ENRICH: "scripts_gene_analysis/hallmark/ora_results/Acute Lymphoblastic Leukemia_enrichment_results.csv"
+# AML files to check if files exist in ENR_15_FOLDER
+AML_ENRICH_15: "scripts_gene_analysis/hallmark/ern_res_p_values_15/LAML_gene_list_top_enriched_pathways.tsv"
+# AML file: Check if file exists in ENR_PLOTS
+AML_PLOT: "scripts_gene_analysis/hallmark/enr_plots/Acute Myeloid Leukemia_plot.png"
 
 #### Downstream analysis ####
 
