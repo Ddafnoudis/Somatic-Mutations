@@ -8,7 +8,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt 
 
 
-def over_representation_analysis(gene_file_folder: Path, enr_res_folder: Path):
+def over_representation_analysis(gene_file_folder: Path, enr_res_folder: Path, enr_plots: Path):
     """
     Perform over-representation analysis using hallmark gene set files.
     """
@@ -42,8 +42,8 @@ def over_representation_analysis(gene_file_folder: Path, enr_res_folder: Path):
         # Get the enrichment results
         enr_results = enr_over_repr.results
 
-        # Save the enrichment results to a file
-        enr_results.to_csv(f"{enr_res_folder}/{title_name}enrichment_results.csv", sep='\t', index=False)
+        # Save the enrichment results to the ora_results folder
+        enr_results.to_csv(f"{enr_res_folder}/{title_name}_enrichment_results.csv", sep='\t', index=False)
         
         # Filter significant pathways
         significant_pathways = enr_results[enr_results['Adjusted P-value'] < significance_threshold]
@@ -70,7 +70,7 @@ def over_representation_analysis(gene_file_folder: Path, enr_res_folder: Path):
             plt.xlabel('Gene Set')
             plt.ylabel('Adjusted P-value')
             plt.tight_layout()
-            plt.savefig(f"{enr_res_folder}dotplot_{title_name}.png")
+            plt.savefig(f"{enr_plots}/{title_name}_plot.png")
             plt.close()
 
     return enr_results
