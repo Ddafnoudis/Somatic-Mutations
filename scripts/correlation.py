@@ -1,23 +1,36 @@
 """
-Apply for correlation of columns in the dataset
-Plot the correlation matrix
-Save the statistical significance of the correlation matrix
+Apply categorical and numerical correlation analysis on the dataset.
+Apply correlation ration between the categorical & numerical features.
 """
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from typing import List
 import scipy.stats as ss
 from pandas import DataFrame
 import matplotlib.pyplot as plt
 
 
 def correlation(full_data: DataFrame):
+    # full_data = pd.read_csv(full_data)
+    categorical_features = ["Hugo_Symbol", 
+                            "Chromosome", 
+                            "Consequence",
+                            "Variant_Classification", 
+                            "Reference_Allele", 
+                            "Tumor_Seq_Allele1", 
+                            "Tumor_Seq_Allele2"]
+    
+    numerical_features = ["Start_Position", "End_Position", "t_ref_count", "t_alt_count"]
 
     def cramers_v(confusion_matrix: DataFrame):
         """
         Calculates the Cramér's V statistic for a given confusion matrix.
         """
-        chi2 = ss.chi2_contingency(confusion_matrix)[0]
+        # # Pass the confusion_matrix instead of full_data and correct unpacking
+        chi2, p = ss.chi2_contingency(confusion_matrix, correction=False)
+        print(f'\nThe p-value is {p} and the Cramer V is: {chi2}\n')
+        # chi2 = ss.chi2_contingency(confusion_matrix)[0]
         n = confusion_matrix.sum().sum()
         phi2 = chi2 / n
         r, k = confusion_matrix.shape
@@ -27,22 +40,27 @@ def correlation(full_data: DataFrame):
         
         return np.sqrt(phi2corr / min((kcorr - 1), (rcorr - 1)))
 
-    def categorical_correlation(full_data: DataFrame):
+    def categorical_correlation(full_data: DataFrame, categorical_features: List):
         """
         Calculates the categorical correlation matrix.
         The function iterates through each pair of columns in the DataFrame, 
         calculates the confusion matrix, and then computes Cramér's V statistic 
         to measure the association between the two categorical variables.
         """
-        categorical_corr = DataFrame(index=full_data.columns, columns=full_data.columns)
-        for i in full_data.columns:
-            for j in full_data.columns:
-                confusion_matrix = pd.crosstab(full_data[i], full_data[j])
-                categorical_corr.loc[i, j] = cramers_v(confusion_matrix)
+        categorical_corr = DataFrame(index=full_data[categorical_features], columns=full_data[categorical_features])
+        # print(f"This is the categorical corr :{categorical_corr}");exit()
+        for first_feature in full_data[categorical_features]:
+            # print(first_feature);exit()
+            for second_feature in full_data[categorical_features]:
+                if first_feature != second_feature:
+                    confusion_matrix = pd.crosstab(full_data[first_feature], full_data[second_feature])
+                    categorical_corr.loc[first_feature, second_feature] = cramers_v(confusion_matrix)
+            print(categorical_corr)
         return categorical_corr
 
-    # Assuming `features` is a DataFrame containing only categorical features
-    categorical_corr_matrix = categorical_correlation(full_data)
+    
+    categorical_corr_matrix = categorical_correlation(full_data, categorical_features)
+    print(f'\n\nCategorical correlation matrix\n\n{categorical_corr_matrix}\n\n')
 
     def plot_categorical_correlation(corr_matrix):
         plt.figure(figsize=(12, 10))
@@ -58,28 +76,9 @@ def correlation(full_data: DataFrame):
         plt.savefig('result_files/categorical_correlation.png')
         # plt.show()
 
+    
     plot_categorical_correlation(categorical_corr_matrix)
-
-    # Assess statistical significance of the correlations
-    significance_threshold = 0.05
-    results = []
-    for i in range(len(categorical_corr_matrix)):
-        for j in range(i+1, len(categorical_corr_matrix.columns)):
-            corr = float(categorical_corr_matrix.iloc[i, j])
-            p_value = ss.chi2_contingency(pd.crosstab(full_data.iloc[:, i], full_data.iloc[:, j]))[1]
-            if p_value < significance_threshold:
-                results.append(f"Statistically significant correlation between {categorical_corr_matrix.columns[i]} "
-                               f"and {categorical_corr_matrix.columns[j]} (Cramer's V = {corr}, p-value = {p_value})")
-            else:
-                results.append(f"No statistically significant correlation between {categorical_corr_matrix.columns[i]} "
-                               f"and {categorical_corr_matrix.columns[j]} (Cramer's V = {corr}, p-value = {p_value})")
-    print("----------------------------------------------")
-    # Save the results to a text file
-    with open('result_files/correlation_results.txt', 'w') as file:
-        for result in results:
-            file.write(result + '\n')
-  
-    return full_data
+    
 
 
 if __name__ == "__main__":

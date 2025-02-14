@@ -111,15 +111,15 @@ def clean_dataframes():
     full_data['Disease_Type'] = np.where(full_data['Tumor_Sample_Barcode'].str.startswith('SJ'), 'ALL', 
                                 np.where(full_data['Tumor_Sample_Barcode'].str.startswith('TCGA'), 'LAML', 'CLL')
                                 )
-    
-    values = full_data['Disease_Type'].value_counts()
+    # Define the disease types 
+    disease_types = full_data['Disease_Type'].value_counts()
 
-    fig = px.pie(values=values, names=values.index, title='Disease-Associated Genomic Variations: A Pie Chart Overview')
+    fig = px.pie(values=disease_types, names=disease_types.index, title='Disease-Associated Genomic Variations: A Pie Chart Overview')
     fig.update_traces(textposition='inside', textinfo='percent+label')
     # fig.show()
 
     # Remove constant columns
-    full_data = full_data.drop(columns=["NCBI_Build", "Strand"], axis=1)
+    full_data = full_data.drop(columns=["NCBI_Build", "Strand", "Tumor_Sample_Barcode", "Transcript_ID"], axis=1)
     full_data.to_csv("datasets/full_columns_data.tsv", sep="\t", index=False)
 
     return full_data
