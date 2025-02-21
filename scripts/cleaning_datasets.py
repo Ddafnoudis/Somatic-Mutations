@@ -55,9 +55,6 @@ def clean_dataframes():
     uncommon_columns_laml_2018 = columns_laml_2018 - common_columns
     uncommon_columns_cll_2015 = columns_cll_2015 - common_columns
 
-    # Combine all uncommon columns
-    all_uncommon_columns = uncommon_columns_all_2015.union(uncommon_columns_all_2016, uncommon_columns_laml_2018, uncommon_columns_cll_2015)
-
     # Drop the columns that are not in the common_columns
     concatenated_common_collumns = pd.concat(dfs_list, join="inner", ignore_index=True)
 
@@ -119,7 +116,7 @@ def clean_dataframes():
     # fig.show()
 
     # Remove constant columns
-    full_data = full_data.drop(columns=["NCBI_Build", "Strand", "Tumor_Sample_Barcode", "Transcript_ID"], axis=1)
+    full_data = full_data.drop(columns=["NCBI_Build", "Strand", "Tumor_Sample_Barcode", "Transcript_ID", "End_Position"], axis=1)
     full_data.to_csv("datasets/full_columns_data.tsv", sep="\t", index=False)
 
     return full_data

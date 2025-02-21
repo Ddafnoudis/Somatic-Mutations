@@ -12,6 +12,7 @@ from scripts.lazy_predict import lazy_predict
 from scripts.cleaning_datasets import clean_dataframes
 from scripts.encoding import encode_data, stratified_k_fold
 from scripts.hyperparameter_tuning import random_forest_tuning
+from scripts.corr_data_preprocessing import corr_data_preproc
 from scripts.random_forest import random_forest_train_test_validation 
 from scripts.mlp_nn import multilayer_perceptron, validate_multilayer_perceptron
 from scripts_gene_analysis.scripts.gene_list import gene_list_
@@ -21,7 +22,9 @@ from scripts_gene_analysis.scripts.enr_result_p_value import enrich_res_sorted_t
 
 
 def condition_statement(working_gene_dir: Path,
-                        dataset: Path, 
+                        dataset_somatic_mutation: Path, 
+                        dataset: Path,
+                        significant_threshold: float,
                         gene_file_folder: Path,
                         hallmark_results: Path,
                         enr_res_folder: Path,
@@ -42,8 +45,12 @@ def condition_statement(working_gene_dir: Path,
     results files you need to have in the result_files/
     folder
     """
-    # Parse the dataset
-    df_mutations = pd.read_csv(dataset, sep='\t', dtype=object)
+    # Clean data from missing values
+    full_data = clean_dataframes()
+
+    # Parse the dataset for the upstream analysis
+    df_mutations = pd.read_csv(dataset_somatic_mutation, sep='\t', dtype=object)
+    
     # Check if the files exist
     if aml_enrich.exists() and aml_enrich_15.exists() and aml_plot.exists():
         print("Upstream analysis has been completed already!\n")
@@ -73,7 +80,6 @@ def condition_statement(working_gene_dir: Path,
     else:
         print("Gene file folders does not exist!")
         # Create the multiple folders
-        # Define the folders 
         folders = [gene_file_folder, hallmark_results, enr_res_folder, enr_15_folder, enr_plots]
         # Iterate over the folders 
         for folder in folders:
@@ -100,8 +106,11 @@ def condition_statement(working_gene_dir: Path,
         common_pathways(all_enr_reactome_22, laml_enr_reactome_22, cll_enr_reactome_22)
 
        
-    # Clean data from missing values
-    full_data = clean_dataframes()
+    # # Clean data from missing values
+    # full_data = clean_dataframes()
+
+    # Preprocessing dataset for correlation analysis
+    categorical_dataset, numerical_dataset = corr_data_preproc(full_data=full_data)
 
     # Check if the results folder exists
     if not output_dir.exists():
@@ -114,10 +123,11 @@ def condition_statement(working_gene_dir: Path,
         print(f"Correlation has been completed already. Location: {output_dir}/\n")
     else:
         print("Correlation process begins!\n")
+        
         # Perform Cramer's V correlation
-        correlation(full_data)
+        correlation(categorical_dataset=categorical_dataset, numerical_dataset=numerical_dataset, significant_threshold=significant_threshold)
     # Remove columns that are highly correlated
-    full_data = full_data.drop(columns=["Transcript_ID", "End_Position", "Variant_Type",
+    full_data = full_data.drop(columns=["Transcript_ID", "Variant_Type",
                                     "Tumor_Seq_Allele1", "Reference_Allele", 
                                     "Tumor_Sample_Barcode", "Consequence"])
     # If the data are not save then save the full dataset that we will work with
