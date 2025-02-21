@@ -3,7 +3,7 @@
 # Working directory for mutational analysis
 WORK_GENE_DIR: "scripts_gene_analysis/"
 # Dataset for the analysis of somatic mutations
-DATASET: "datasets/full_columns_data.tsv"
+DATASET_SOMATIC_MUTATION: "datasets/full_columns_data.tsv"
 # Directory for Leukemia gene lists
 GENE_FILES_FOLDER: "scripts_gene_analysis/gene_folder/"
 # Output directory for Leukemia gene lists
@@ -25,6 +25,8 @@ AML_PLOT: "scripts_gene_analysis/hallmark/enr_plots/Acute Myeloid Leukemia_plot.
 
 # Seed for reproducibility
 SEED: 42
+# Assess statistical significance of the correlations
+SIGNIFICANT_THRESHOLD: 0.05
 
 # Data path
 WORK_DIR: 'Somatic-Mutations/'
