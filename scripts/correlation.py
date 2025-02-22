@@ -2,6 +2,7 @@
 Apply categorical and numerical correlation analysis on the dataset.
 Apply correlation ration between the categorical & numerical features.
 """
+import os
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
@@ -38,10 +39,12 @@ def correlation(categorical_dataset: DataFrame, numerical_dataset: DataFrame, si
                     result_file["spearman"].append(rho)
                     result_file["p_value"].append(p)
 
-        # Save the result file
-        with open('result_files/spearman_correlation.txt', 'w') as file:
-            for i in range(len(result_file["feature1"])):
-                file.write(f"{result_file['feature1'][i]}, {result_file['feature2'][i]}, {result_file['spearman'][i]}, {result_file['p_value'][i]}\n")
+        # Spearman correlation to DatFrame
+        result_file = pd.DataFrame(result_file, columns=["feature1", "feature2", "spearman", "p_value"])
+        if not os.path.exists("result_files/correlation_folder"):
+            os.makedirs("result_files/correlation_folder", exist_ok=True)
+        # Save the results to a TSV file
+        result_file.to_csv("result_files/correlation_folder/spearman_correlation.tsv", "\t")
         
         return rho
 
@@ -96,7 +99,7 @@ def correlation(categorical_dataset: DataFrame, numerical_dataset: DataFrame, si
         plt.title('Categorical Correlation Matrix')
         plt.xlabel('Features')
         plt.ylabel('Features')
-        plt.savefig('result_files/categorical_correlation.png')
+        plt.savefig('result_files/correlation_folder/categorical_correlation.png')
         # plt.show()
 
     plot_categorical_correlation(categorical_corr_matrix)
@@ -126,16 +129,12 @@ def correlation(categorical_dataset: DataFrame, numerical_dataset: DataFrame, si
                         results["correlation"].append(corr)
                         results["p_value"].append(p_value)
         pbar.update(1000)
-        
-    numerical_dataset = pd.DataFrame(results, columns=["feature1", "feature2", "correlation", "p_value"])
-    numerical_dataset.to_csv("results/correlation_results.tsv", "\t")
-    print(numerical_dataset);exit()
-    # Save the results to a text file
-    with open('result_files/correlation_results.txt', 'w') as file:
-        for i in range(len(results["feature1"])):
-            file.write(f"{results['feature1'][i]}, {results['feature2'][i]}, {results['correlation'][i]}, {results['p_value'][i]}\n")
-    # Define the columns from the categorical and numerical
 
+    # Numerical dataset to DataFrame    
+    numerical_dataset = pd.DataFrame(results, columns=["feature1", "feature2", "correlation", "p_value"])
+    # Save the results to a TSV file
+    numerical_dataset.to_csv("result_files/correlation_folder/correlation_results.tsv", "\t")
+    
 
 if __name__ == "__main__":
     correlation()
