@@ -27,6 +27,7 @@ def main():
         corr_results =config['CORR_RESULTS'],
         lzp_results = config['LZP_RESULTS'], 
         report_rf = config["REPORT_RF"], 
+        rf_folder = config["RF_FOLDER"],
         rf_best_parameters=config["RF_BEST_PARAMS"],
         mlp_results=config["MLP_RESULTS"], 
         best_params = config["BEST_PARAMS"],
