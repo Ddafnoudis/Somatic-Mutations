@@ -33,8 +33,8 @@ WORK_DIR: 'Somatic-Mutations/'
 DATASET: 'datasets/full_data.tsv'
 OUTPUT_DIR: 'result_files/'
 # Correlation matrix cramers_v
-CORR_IMAGE: 'result_files/categorical_correlation.png'
-CORR_RESULTS: 'result_files/correlation_results.txt'
+CORR_IMAGE: 'result_files/correlation_folder/categorical_correlation.png'
+CORR_RESULTS: 'result_files/correlation_folder/correlation_results.txt'
 # Feature Selection
 ANOVA: 'result_files/ANOVA_F_value_feature_importance.png'
 MIT: 'result_files/mutual_info_class.png'
