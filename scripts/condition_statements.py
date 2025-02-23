@@ -13,6 +13,8 @@ from scripts.cleaning_datasets import clean_dataframes
 from scripts.encoding import encode_data, stratified_k_fold
 from scripts.hyperparameter_tuning import random_forest_tuning
 from scripts.corr_data_preprocessing import corr_data_preproc
+from scripts.corr_ratio import analyze_categorical_numerical_correlation
+from scripts.data_after_corr import data_after_correlation
 from scripts.random_forest import random_forest_train_test_validation 
 from scripts.mlp_nn import multilayer_perceptron, validate_multilayer_perceptron
 from scripts_gene_analysis.scripts.gene_list import gene_list_
@@ -124,12 +126,20 @@ def condition_statement(working_gene_dir: Path,
     else:
         print("Correlation process begins!\n")
         
-        # Perform Cramer's V correlation
-        correlation(categorical_dataset=categorical_dataset, numerical_dataset=numerical_dataset, significant_threshold=significant_threshold)
-    # Remove columns that are highly correlated
-    full_data = full_data.drop(columns=["Transcript_ID", "Variant_Type",
-                                    "Tumor_Seq_Allele1", "Reference_Allele", 
-                                    "Tumor_Sample_Barcode", "Consequence"])
+        # Perform Cramer's V correlation and spearman
+        cramers_file, spearman_file = correlation(categorical_dataset=categorical_dataset, numerical_dataset=numerical_dataset, significant_threshold=significant_threshold)
+        # Return the full data after correlation
+        categorical_data, numerical_data = data_after_correlation(full_data=full_data, spearman_file=spearman_file, cramers_file=cramers_file)
+
+        # Correlation ratio
+        correlation_results = analyze_categorical_numerical_correlation(categorical_data=categorical_data, numerical_data=numerical_data)
+
+    print("--------------------------------");exit()
+
+    # # Remove columns that are highly correlated
+    # full_data = full_data.drop(columns=["Transcript_ID", "Variant_Type",
+    #                                 "Tumor_Seq_Allele1", "Reference_Allele", 
+    #                                 "Tumor_Sample_Barcode", "Consequence"])
     # If the data are not save then save the full dataset that we will work with
     if data.exists():
         print("Full data exists")

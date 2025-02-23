@@ -1,27 +1,35 @@
 """
-Apply categorical and numerical correlation analysis on the dataset.
-Apply correlation ration between the categorical & numerical features.
+This script applys the Cramers V to the categorical dataset and 
+Spearman to the numerical dataset. 
+Returns:
+    - Spearman correlation tsv file
+    - Cramers V correlation tsv file
+    - Categorical correlation heatmap
 """
 import os
-from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from tqdm import tqdm
 import scipy.stats as ss
-from scipy.stats import spearmanr
 from pandas import DataFrame
 import matplotlib.pyplot as plt
+from scipy.stats import spearmanr
 
 
 def correlation(categorical_dataset: DataFrame, numerical_dataset: DataFrame, significant_threshold: float):
-
+    """
+    Compute the correlation between categorical and numerical features.
+    - Spearman correlation: numerical datasets
+    - Cramér's V statistic: categorical dataset
+    """
 
     def spearman_correlation(numerical_dataset: DataFrame):
         """
         Calculates the Spearman correlation matrix.
         """
         # Define the dictionary 
-        result_file = {
+        spearman_dict = {
             "feature1": [],
             "feature2": [],
             "spearman": [],
@@ -34,22 +42,19 @@ def correlation(categorical_dataset: DataFrame, numerical_dataset: DataFrame, si
                 rho, p = spearmanr(numerical_dataset[first_feature], 
                                    numerical_dataset[second_feature])
                 if p < significant_threshold:
-                    result_file["feature1"].append(first_feature)
-                    result_file["feature2"].append(second_feature)
-                    result_file["spearman"].append(rho)
-                    result_file["p_value"].append(p)
+                    spearman_dict["feature1"].append(first_feature)
+                    spearman_dict["feature2"].append(second_feature)
+                    spearman_dict["spearman"].append(rho)
+                    spearman_dict["p_value"].append(p)
 
         # Spearman correlation to DatFrame
-        result_file = pd.DataFrame(result_file, columns=["feature1", "feature2", "spearman", "p_value"])
+        spearman_file = pd.DataFrame(spearman_dict, columns=["feature1", "feature2", "spearman", "p_value"])
         if not os.path.exists("result_files/correlation_folder"):
             os.makedirs("result_files/correlation_folder", exist_ok=True)
         # Save the results to a TSV file
-        result_file.to_csv("result_files/correlation_folder/spearman_correlation.tsv", "\t")
+        spearman_file.to_csv("result_files/correlation_folder/spearman_correlation.tsv", "\t")
         
-        return rho
-
-    # Execute and define the spearman function
-    sperman = spearman_correlation(numerical_dataset)
+        return spearman_file
 
     def cramers_v(confusion_matrix: DataFrame):
         """
@@ -91,6 +96,9 @@ def correlation(categorical_dataset: DataFrame, numerical_dataset: DataFrame, si
 
 
     def plot_categorical_correlation(corr_matrix):
+        """
+        Plots the categorical correlation matrix.
+        """
         plt.figure(figsize=(12, 10))
         sns.heatmap(corr_matrix.astype(float), cmap='coolwarm', linewidths=0.5)
         for i in range(len(corr_matrix)):
@@ -105,7 +113,7 @@ def correlation(categorical_dataset: DataFrame, numerical_dataset: DataFrame, si
     plot_categorical_correlation(categorical_corr_matrix)
     
     # Define the results dictionary
-    results = {
+    cramers_v_dict = {
         "feature1": [],
         "feature2": [],
         "correlation": [],
@@ -124,17 +132,22 @@ def correlation(categorical_dataset: DataFrame, numerical_dataset: DataFrame, si
                 if p_value < significant_threshold:
                     if corr < 0.25:
                         # Append the results to the dictionary's lists
-                        results["feature1"].append(categorical_corr_matrix.columns[first_feature])
-                        results["feature2"].append(categorical_corr_matrix.columns[second_feature])
-                        results["correlation"].append(corr)
-                        results["p_value"].append(p_value)
+                        cramers_v_dict["feature1"].append(categorical_corr_matrix.columns[first_feature])
+                        cramers_v_dict["feature2"].append(categorical_corr_matrix.columns[second_feature])
+                        cramers_v_dict["correlation"].append(corr)
+                        cramers_v_dict["p_value"].append(p_value)
         pbar.update(1000)
 
     # Numerical dataset to DataFrame    
-    numerical_dataset = pd.DataFrame(results, columns=["feature1", "feature2", "correlation", "p_value"])
+    cramers_file = pd.DataFrame(cramers_v_dict, columns=["feature1", "feature2", "correlation", "p_value"])
     # Save the results to a TSV file
-    numerical_dataset.to_csv("result_files/correlation_folder/correlation_results.tsv", "\t")
+    cramers_file.to_csv("result_files/correlation_folder/correlation_results.tsv", "\t")
     
+    # Execute and define the spearman function
+    spearman_file = spearman_correlation(numerical_dataset)
+    
+    return cramers_file, spearman_file
+
 
 if __name__ == "__main__":
     correlation()
