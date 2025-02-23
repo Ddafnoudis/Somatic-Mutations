@@ -11,6 +11,7 @@ categorical_features = ["Hugo_Symbol",
                         "Consequence",
                         "Variant_Classification", 
                         "Reference_Allele", 
+                        "Tumor_Sample_Barcode",
                         "Tumor_Seq_Allele1", 
                         "Tumor_Seq_Allele2"]
     
@@ -26,9 +27,6 @@ def corr_data_preproc(full_data: DataFrame)-> DataFrame:
 
     # Define the numerical dataset
     numerical_dataset = full_data[numerical_features].astype(int)
-
-    print(f"\nCategorical Dataset:\n {categorical_dataset.head()},\n{categorical_dataset.columns}\n\n")
-    print(f"\nNumerical Dataset:\n {numerical_dataset.head()},\n{numerical_dataset.columns}\n\n")
 
     return categorical_dataset, numerical_dataset
 

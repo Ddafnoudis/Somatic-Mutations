@@ -104,19 +104,8 @@ def clean_dataframes():
     fig.update_layout(coloraxis_colorbar=dict(title="Missing Data"))
     # fig.show()
 
-    # Assuming full_data is your DataFrame containing the 'Tumor_Sample_Barcode' column
-    full_data['Disease_Type'] = np.where(full_data['Tumor_Sample_Barcode'].str.startswith('SJ'), 'ALL', 
-                                np.where(full_data['Tumor_Sample_Barcode'].str.startswith('TCGA'), 'LAML', 'CLL')
-                                )
-    # Define the disease types 
-    disease_types = full_data['Disease_Type'].value_counts()
-
-    fig = px.pie(values=disease_types, names=disease_types.index, title='Disease-Associated Genomic Variations: A Pie Chart Overview')
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-    # fig.show()
-
     # Remove constant columns
-    full_data = full_data.drop(columns=["NCBI_Build", "Strand", "Tumor_Sample_Barcode", "Transcript_ID", "End_Position"], axis=1)
+    full_data = full_data.drop(columns=["NCBI_Build", "Strand", "Transcript_ID", "End_Position"], axis=1)
     full_data.to_csv("datasets/full_columns_data.tsv", sep="\t", index=False)
 
     return full_data

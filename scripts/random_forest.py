@@ -66,16 +66,16 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
     # np.savetxt('result_files/cv_score.txt', cv_score)
     
     # Save the results
-    with open('result_files/balanced_accuracy.txt', "w") as f:
+    with open('result_files/rf_folder/balanced_accuracy.txt', "w") as f:
         f.write(str(b_accuracy))
 
-    with open('result_files/balanced_accuracy_val.txt', "w") as f:
+    with open('result_files/rf_folder/balanced_accuracy_val.txt', "w") as f:
         f.write(str(b_accuracy_val))
     
-    with open('result_files/class_report.txt', "w") as f:
+    with open('result_files/rf_folder/class_report.txt', "w") as f:
         f.write(report)
 
-    with open('result_files/class_report_val.txt', "w") as f:
+    with open('result_files/rf_folder/class_report_val.txt', "w") as f:
         f.write(report_val)
 
     # Roc Curve
@@ -129,7 +129,7 @@ def random_forest_train_test_validation(X_train, y_train, X_test, y_test, X_val,
     )
     fig.show()
     # Save the plot
-    fig.write_image("result_files/roc_curve.png")
+    fig.write_image("result_files/rf_folder/roc_curve.png")
 
 
     return b_accuracy, report, cm, b_accuracy_val, report_val, cm_val

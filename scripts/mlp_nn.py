@@ -151,6 +151,8 @@ def validate_multilayer_perceptron(X_val_dl, y_val_dl_reshaped, sequential_model
         file.write("Classification Report:\n{}\n".format(val_classification_report))
 
     return val_accuracy, val_confusion_matrix, val_classification_report
+
+
 if __name__ == "__main__":
     multilayer_perceptron()
     validate_multilayer_perceptron()

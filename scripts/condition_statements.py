@@ -13,7 +13,7 @@ from scripts.cleaning_datasets import clean_dataframes
 from scripts.encoding import encode_data, stratified_k_fold
 from scripts.hyperparameter_tuning import random_forest_tuning
 from scripts.corr_data_preprocessing import corr_data_preproc
-from scripts.corr_ratio import analyze_categorical_numerical_correlation
+from scripts.target_features import full_dataframe
 from scripts.data_after_corr import data_after_correlation
 from scripts.random_forest import random_forest_train_test_validation 
 from scripts.mlp_nn import multilayer_perceptron, validate_multilayer_perceptron
@@ -35,6 +35,7 @@ def condition_statement(working_gene_dir: Path,
                         aml_enrich: Path,
                         aml_enrich_15: Path,
                         aml_plot: Path,
+                        rf_folder: Path,
                         output_dir: Path, data: Path, 
                         corr_image: Path, corr_results: Path, 
                         lzp_results: Path, report_rf: Path, 
@@ -107,10 +108,6 @@ def condition_statement(working_gene_dir: Path,
         # Find common pathways
         common_pathways(all_enr_reactome_22, laml_enr_reactome_22, cll_enr_reactome_22)
 
-       
-    # # Clean data from missing values
-    # full_data = clean_dataframes()
-
     # Preprocessing dataset for correlation analysis
     categorical_dataset, numerical_dataset = corr_data_preproc(full_data=full_data)
 
@@ -121,7 +118,7 @@ def condition_statement(working_gene_dir: Path,
         print(f"The {output_dir} exists!")
 
     # Cramer_v for finding the correlation between features
-    if corr_image.exists() and corr_results.exists():
+    if data.exists():
         print(f"Correlation has been completed already. Location: {output_dir}/\n")
     else:
         print("Correlation process begins!\n")
@@ -129,28 +126,11 @@ def condition_statement(working_gene_dir: Path,
         # Perform Cramer's V correlation and spearman
         cramers_file, spearman_file = correlation(categorical_dataset=categorical_dataset, numerical_dataset=numerical_dataset, significant_threshold=significant_threshold)
         # Return the full data after correlation
-        categorical_data, numerical_data = data_after_correlation(full_data=full_data, spearman_file=spearman_file, cramers_file=cramers_file)
-
-        # Correlation ratio
-        correlation_results = analyze_categorical_numerical_correlation(categorical_data=categorical_data, numerical_data=numerical_data)
-
-    print("--------------------------------");exit()
-
-    # # Remove columns that are highly correlated
-    # full_data = full_data.drop(columns=["Transcript_ID", "Variant_Type",
-    #                                 "Tumor_Seq_Allele1", "Reference_Allele", 
-    #                                 "Tumor_Sample_Barcode", "Consequence"])
-    # If the data are not save then save the full dataset that we will work with
-    if data.exists():
-        print("Full data exists")
-    else:
-        full_data.to_csv("datasets/full_data.tsv", sep="\t", index=False)
+        full_data = data_after_correlation(full_data=full_data, spearman_file=spearman_file, cramers_file=cramers_file)
     
-    # Define features and target
-    features = full_data.iloc[:, :-1]
-    target = full_data["Disease_Type"]
-    target_classes = target.unique().tolist()
-
+    # Define the features, target and target classes of the dataset
+    features, target, target_classes =full_dataframe(data=data)
+    
     # Encode the data 
     features_enc, target_enc = encode_data(feat=features, tar=target, seed=seed)
     # print(f"The shape of the data after ordinal enocding is:\n{data.shape}")
@@ -167,9 +147,10 @@ def condition_statement(working_gene_dir: Path,
                 y_test_dl_reshaped=y_test_dl_reshaped, y_val_dl_reshaped=y_val_dl_reshaped)
     
     # Results of Random Forest
-    if report_rf.exists() or rf_best_parameters.exists():
+    if report_rf.exists() and rf_folder.exists():
         print(f"Random Forest has been completed. Location: {output_dir}/\n")
     else:
+        os.mkdir(rf_folder)
         # Random Forest hyperparameter tuning
         print("Starting Random Forest parameters tuning process!\n")
         rf_best_params = random_forest_tuning(X_train=X_train, y_train=y_train, seed=seed, forest_params=rf_parameters)
@@ -182,12 +163,12 @@ def condition_statement(working_gene_dir: Path,
                                             rf_best_params=rf_best_params,
                                             seed=seed)
     # Results of lazy predict
-    if lzp_results.exists():
-        print(f"Lazy predict has done its predictions! Location: {output_dir}/\n")
-    else:
-        # Perform lazy predict classification 
-        print("Start Lazy Predict classification!")
-        lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test, seed=seed)
+    # if lzp_results.exists():
+    #     print(f"Lazy predict has done its predictions! Location: {output_dir}/\n")
+    # else:
+    #     # Perform lazy predict classification 
+    #     print("Start Lazy Predict classification!")
+    #     lazy_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test, seed=seed)
 
     # Grid search optimization
     if os.path.exists(best_params):

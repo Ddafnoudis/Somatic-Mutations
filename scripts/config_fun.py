@@ -34,6 +34,7 @@ def parse_configuration_files(fname) -> Dict[int, str]:
     config['CORR_RESULTS'] = Path(config['CORR_RESULTS'])
     config['LZP_RESULTS'] = Path(config['LZP_RESULTS'])
     config['ANOVA'] = Path(config["ANOVA"])
+    config["RF_FOLDER"] = Path(config["RF_FOLDER"])
     config['MIT'] = Path(config["MIT"])
     config['CROSS_VAL'] = Path(config['CROSS_VAL'])
     config['ACCURACY'] = Path(config['ACCURACY'])
