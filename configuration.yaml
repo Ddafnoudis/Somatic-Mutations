@@ -26,13 +26,14 @@ AML_PLOT: "scripts_gene_analysis/hallmark/enr_plots/Acute Myeloid Leukemia_plot.
 # Seed for reproducibility
 SEED: 42
 # Assess statistical significance of the correlations
-SIGNIFICANT_THRESHOLD: 0.05
+SIGNIFICANT_THRESHOLD: 0.050
 
 # Data path
 WORK_DIR: 'Somatic-Mutations/'
 DATASET: 'datasets/full_data.tsv'
 OUTPUT_DIR: 'result_files/'
 # Correlation matrix cramers_v
+CORR_FOLDER: "result_files/correlation_folder/"
 CORR_IMAGE: 'result_files/correlation_folder/categorical_correlation.png'
 CORR_RESULTS: 'result_files/correlation_folder/correlation_results.txt'
 # Feature Selection
