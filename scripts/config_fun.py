@@ -16,6 +16,7 @@ def parse_configuration_files(fname) -> Dict[int, str]:
     
     config['WORK_GENE_DIR'] = Path(config['WORK_GENE_DIR'])
     config['DATASET'] = Path(config['DATASET'])
+    config["CORR_FOLDER"] = Path(config["CORR_FOLDER"])
     config["DATASET_SOMATIC_MUTATION"] = Path(config['DATASET_SOMATIC_MUTATION'])
     config["SIGNIFICANT_THRESHOLD"] = float(config["SIGNIFICANT_THRESHOLD"])
     config['GENE_FILES_FOLDER'] = Path(config['GENE_FILES_FOLDER'])
