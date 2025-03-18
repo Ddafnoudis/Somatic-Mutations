@@ -1,5 +1,6 @@
 """
-A script that returns A dataframe after correlation
+A script that returns a dataframe after correlation by
+removing features with a p-value < 0.05.
 """
 import itertools
 import numpy as np
@@ -7,41 +8,42 @@ import pandas as pd
 from pandas import DataFrame
 
 
-def data_after_correlation(full_data, spearman_file, cramers_file)-> DataFrame:
+def data_after_correlation(full_data, corr_folder, significant_threshold)-> DataFrame:
     """"
-    Returns a dataframe after correlation
+    Remove features with a p-value < 0.05.
     """
-    # Get the features from the correlation files in lists
-    feature1 = spearman_file["feature1"].tolist()
-    feature2 = spearman_file["feature2"].tolist()
-    cram_feature1 = cramers_file["feature1"].tolist()
-    cram_feature2 = cramers_file["feature2"].tolist()
+    # Define the dataframes
+    anova_df = pd.read_csv(str(corr_folder) + "/anova_correlation.tsv", sep="\t")
+    chi_df = pd.read_csv(str(corr_folder) + "/chi_square_correlation.tsv", sep="\t")
 
-    # Combine the lists of features and remove duplicates directly
-    speaman_list = list(set(itertools.chain(feature1, feature2)))
-    cramers_list = list(set(itertools.chain(cram_feature1, cram_feature2)))
-    # Total features
-    total_features = list(set(itertools.chain(speaman_list, cramers_list)))
+    # Sort DataFrames by p-value (ascending)
+    anova_sorted = anova_df.sort_values(by="ANOVA F-Score", ascending=False)
+    chi_sorted = chi_df.sort_values(by="Chi-Square Score", ascending=False)  
+
+    # Extract sorted p-values
+    anova_p = anova_sorted["p-value"]
+    chi_p = chi_sorted["p-value"]
     
-    # Remove columns from the full_data that do not exist in the total_features
-    categorical_data = full_data[cramers_list]
-    numerical_data = full_data[speaman_list]
+    # Define values greater that p-value threshold
+    anova_sign_feat = anova_df[anova_p.values <= significant_threshold]["Feature"].tolist()
+    chi_sign_feat = chi_df[chi_p.values <= significant_threshold]["Feature"].tolist()
+    
+    # Combine all features to keep
+    features_sign = list(set(chi_sign_feat + anova_sign_feat ))
+    # print(features_sign, type(features_sign))
 
-    # Concatenate categorical data with numerical data
-    full_data = pd.concat([categorical_data, numerical_data], axis=1)
+    # Filter the full_data to keep only significant features
+    filtered_data = full_data[features_sign]
+    print(filtered_data.columns)
 
-    # Assuming full_data is your DataFrame containing the 'Tumor_Sample_Barcode' column
-    full_data['Disease_Type'] = np.where(full_data['Tumor_Sample_Barcode'].str.startswith('SJ'), 'ALL', 
+    # Add column based on the Tumor_Sample_Barcode if it exists in full_data
+    if 'Tumor_Sample_Barcode' in full_data.columns:
+        filtered_data['Disease_Type'] = np.where(full_data['Tumor_Sample_Barcode'].str.startswith('SJ'), 'ALL', 
                                 np.where(full_data['Tumor_Sample_Barcode'].str.startswith('TCGA'), 'LAML', 'CLL'))
-    
-    # Drop the 'Tumor_Sample_Barcode' column
-    full_data = full_data.drop(columns=['Tumor_Sample_Barcode'])
-
+   
     # Save the full_data to a tsv file
-    full_data.to_csv("datasets/full_data.tsv", sep="\t", index=False)
-
-    return full_data
-
+    filtered_data.to_csv("datasets/full_data.tsv", sep="\t", index=False)
     
-if __name__ == '__main__':
+ 
+if __name__ == "__main__":
     data_after_correlation()
