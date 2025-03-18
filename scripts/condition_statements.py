@@ -26,6 +26,7 @@ from scripts_gene_analysis.scripts.enr_result_p_value import enrich_res_sorted_t
 def condition_statement(working_gene_dir: Path,
                         dataset_somatic_mutation: Path, 
                         dataset: Path,
+                        corr_folder: Path,
                         significant_threshold: float,
                         gene_file_folder: Path,
                         hallmark_results: Path,
@@ -109,7 +110,7 @@ def condition_statement(working_gene_dir: Path,
         common_pathways(all_enr_reactome_22, laml_enr_reactome_22, cll_enr_reactome_22)
 
     # Preprocessing dataset for correlation analysis
-    categorical_dataset, numerical_dataset = corr_data_preproc(full_data=full_data)
+    categorical_dataset_encoded, numerical_dataset, target = corr_data_preproc(full_data=full_data)
 
     # Check if the results folder exists
     if not output_dir.exists():
@@ -118,18 +119,20 @@ def condition_statement(working_gene_dir: Path,
         print(f"The {output_dir} exists!")
 
     # Cramer_v for finding the correlation between features
-    if data.exists():
+    if data.exists() and corr_folder.exists():
         print(f"Correlation has been completed already. Location: {output_dir}/\n")
     else:
         print("Correlation process begins!\n")
-        
+        # Create the correlation folder
+        if not os.path.exists(corr_folder):
+            os.makedirs(corr_folder, exist_ok=True)
         # Perform Cramer's V correlation and spearman
-        cramers_file, spearman_file = correlation(categorical_dataset=categorical_dataset, numerical_dataset=numerical_dataset, significant_threshold=significant_threshold)
+        anova_results, chi_results = correlation(target=target, categorical_dataset=categorical_dataset_encoded, numerical_dataset=numerical_dataset)
         # Return the full data after correlation
-        full_data = data_after_correlation(full_data=full_data, spearman_file=spearman_file, cramers_file=cramers_file)
-    
+        data_after_correlation(full_data=full_data, corr_folder=corr_folder, significant_threshold=significant_threshold)
+
     # Define the features, target and target classes of the dataset
-    features, target, target_classes =full_dataframe(data=data)
+    features, target, target_classes = full_dataframe(data=data)
     
     # Encode the data 
     features_enc, target_enc = encode_data(feat=features, tar=target, seed=seed)
