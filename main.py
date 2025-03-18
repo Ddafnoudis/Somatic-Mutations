@@ -11,6 +11,7 @@ def main():
         working_gene_dir=config["WORK_GENE_DIR"],
         dataset_somatic_mutation=config["DATASET_SOMATIC_MUTATION"],
         dataset=config['DATASET'], 
+        corr_folder = config["CORR_FOLDER"],
         significant_threshold=config["SIGNIFICANT_THRESHOLD"],
         gene_file_folder=config["GENE_FILES_FOLDER"], 
         hallmark_results=config["HALLMARK_RESULTS"], 
