@@ -8,6 +8,7 @@ from pathlib import Path
 from scripts.trial import grid_search
 from scripts.correlation import correlation
 from scripts.check_shapes import check_shape
+from scripts.cardinality import cardinality
 from scripts.lazy_predict import lazy_predict
 from scripts.cleaning_datasets import clean_dataframes
 from scripts.encoding import encode_data, stratified_k_fold
@@ -129,7 +130,8 @@ def condition_statement(working_gene_dir: Path,
         # Perform Cramer's V correlation and spearman
         anova_results, chi_results = correlation(target=target, categorical_dataset=categorical_dataset_encoded, numerical_dataset=numerical_dataset)
         # Return the full data after correlation
-        data_after_correlation(full_data=full_data, corr_folder=corr_folder, significant_threshold=significant_threshold)
+        filtered_data = data_after_correlation(full_data=full_data, corr_folder=corr_folder, significant_threshold=significant_threshold)
+        cardinality(filtered_data=filtered_data)
 
     # Define the features, target and target classes of the dataset
     features, target, target_classes = full_dataframe(data=data)

@@ -2,10 +2,10 @@
 A script that returns a dataframe after correlation by
 removing features with a p-value < 0.05.
 """
-import itertools
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
+from category_encoders import TargetEncoder
 
 
 def data_after_correlation(full_data, corr_folder, significant_threshold)-> DataFrame:
@@ -41,8 +41,7 @@ def data_after_correlation(full_data, corr_folder, significant_threshold)-> Data
         filtered_data['Disease_Type'] = np.where(full_data['Tumor_Sample_Barcode'].str.startswith('SJ'), 'ALL', 
                                 np.where(full_data['Tumor_Sample_Barcode'].str.startswith('TCGA'), 'LAML', 'CLL'))
    
-    # Save the full_data to a tsv file
-    filtered_data.to_csv("datasets/full_data.tsv", sep="\t", index=False)
+    return filtered_data
     
  
 if __name__ == "__main__":
