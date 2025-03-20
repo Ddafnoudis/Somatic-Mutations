@@ -1,5 +1,6 @@
 """
-Cardinality
+A script that plots the number of genes in the dataset,
+and preprocess data, aiming to reduce cardinality effects.
 """
 from category_encoders import TargetEncoder
 import pandas as pd
@@ -9,94 +10,83 @@ import seaborn as sns
 
 def cardinality(filtered_data):
     """
-    Analyzes the frequency of gene occurrences and visualizes the distribution.
-    
-    Parameters:
-    filtered_data (pd.DataFrame): Data containing a column "Hugo_Symbol" with gene names.
-
-    Returns:
-    None - Saves a TSV file and displays plots.
     """
-    # Count occurrences of each gene
-    hugo_counts = filtered_data["Hugo_Symbol"].value_counts()
 
-    # Ensure column names are properly assigned
-    frequency_distribution = hugo_counts.value_counts().rename_axis("Frequency").reset_index(name="Gene_Count")
+    def plot_cardinality(filtered_data):
+        """
+        Analyzes the frequency of gene occurrences and visualizes the distribution.
+        """
+         # Count occurrences of each gene
+        hugo_counts = filtered_data["Hugo_Symbol"].value_counts()
 
-    # Save the frequency distribution
-    frequency_distribution.to_csv("result_files/frequency_distribution.tsv", sep="\t", index=False)
+        # Group by frequency (e.g., how many genes appear 5 times, 10 times, etc.)
+        frequency_distribution = hugo_counts.value_counts().rename_axis("Frequency").reset_index(name="Gene_Count")
 
-    # Print first 5 rows for debugging
-    print(frequency_distribution.head())
-    frequency_distribution.columns = ["Frequency", "Gene_Count"]
+        # Save the frequency distribution
+        frequency_distribution.to_csv("result_files/frequency_distribution.tsv", sep="\t", index=False)
 
-    # Save the frequency distribution
-    frequency_distribution.to_csv("result_files/frequency_distribution.tsv", sep="\t", index=False)
+        # Scatter plot
+        plt.figure(figsize=(12, 6))
 
-    # Create a dictionary of genes grouped by frequency
-    genes_by_frequency = {}
-    for freq in frequency_distribution["Frequency"]:
-        genes_by_frequency[freq] = hugo_counts[hugo_counts == freq].index.tolist()
+        # Scatter plot with point size proportional to frequency
+        scatter = plt.scatter(
+            ## X-axis: How many times a gene appears
+            frequency_distribution["Frequency"],  
+            # Y-axis: How many genes have this occurrence
+            frequency_distribution["Gene_Count"],  
+              # Bubble size scales with frequency
+            s=frequency_distribution["Frequency"] * 2,
+            # Color based on frequency
+            c=frequency_distribution["Frequency"],  
+            cmap="viridis", alpha=0.7, edgecolors="black"
+        )
 
-    # Save gene lists
-    for freq, genes in genes_by_frequency.items():
-        filename = f"result_files/genes_with_{freq}_occurrences.tsv"
-        pd.DataFrame(genes, columns=["Gene"]).to_csv(filename, sep="\t", index=False)
+        # Add labels to each point
+        for i, row in frequency_distribution.iterrows():
+            plt.text(
+                row["Frequency"], row["Gene_Count"], str(row["Frequency"]),
+                fontsize=10, ha="right", va="bottom", fontweight="bold", color="black"
+            )
 
-    # Visualization - Barplot
-    plt.figure(figsize=(12, 6))
-    sns.barplot(x=frequency_distribution["Frequency"], y=frequency_distribution["Gene_Count"], color="blue")
-    plt.yscale("log")  # Log scale to handle large differences in counts
-    plt.xlabel("Number of Times a Gene Appears")
-    plt.ylabel("Number of Genes")
-    plt.title("Gene Occurrence Distribution")
-    plt.xticks(rotation=90)
-    plt.grid(True, which="both",  linewidth=0.5)
-    plt.savefig("result_files/gene_cardinality_plot.png", dpi=300)
-    plt.show()
-    exit()
+        # Log scale to spread out large values
+        plt.xscale("log")  
+        # Log scale for better visibility
+        plt.yscale("log")  
+        # Labels
+        plt.xlabel("Gene preesence", fontsize=12)
+        plt.ylabel("Number of Genes", fontsize=12)
+        # Title
+        plt.title("Gene Occurrence Scatter Plot", fontsize=14)
+        plt.colorbar(scatter, label="Gene Presence (Color Intensity)")
+        # Remove background lines
+        plt.grid(False, which="both")
 
-    
+        # Save plot
+        plt.savefig("result_files/gene_cardinality_scatterplot.png", dpi=300)
+        # Show plot
+        # plt.show()
+
+
+    def cardinality_prepr(filtered_data):
+        """
+        Preprocess data to reduce cardinality effects.
+        """
+        # Define the target
+        target = filtered_data["Disease_Type"]
+        # Transform only Hugo_symbol with targetencoder
+        hugo_symbol_encoded = TargetEncoder().fit_transform(filtered_data["Hugo_Symbol"], target)
+        # Replace the original Hugo_Symbol column with the encoded one
+        filtered_data["Hugo_Symbol"] = hugo_symbol_encoded
+        # Save the preprocessed data
+        filtered_data.to_csv("result_files/cardinality_preprocessed.tsv", sep="\t", index=False)
+
+
+    # Execute function
+    plot_cardinality(filtered_data)
+    # Execute function
+    cardinality_prepr(filtered_data)
+
+
 if __name__=="__main__":
-    # cardinality()
-
-    #  # Count occurrences of each gene
-    # hugo_counts = filtered_data["Hugo_Symbol"].value_counts()
-
-    # # Group by frequency (e.g., how many genes appear 5 times, 10 times, etc.)
-    # frequency_distribution = hugo_counts.value_counts().rename_axis("Frequency").reset_index(name="Gene_Count")
-
-    # # Save the frequency distribution
-    # frequency_distribution.to_csv("result_files/frequency_distribution.tsv", sep="\t", index=False)
-
-    # # Scatter plot
-    # plt.figure(figsize=(12, 6))
+    cardinality()
     
-    # # Scatter plot with point size proportional to frequency
-    # scatter = plt.scatter(
-    #     frequency_distribution["Frequency"],  # X-axis: How many times a gene appears
-    #     frequency_distribution["Gene_Count"],  # Y-axis: How many genes have this occurrence
-    #     s=frequency_distribution["Frequency"] * 2,  # Bubble size scales with frequency
-    #     c=frequency_distribution["Frequency"],  # Color based on frequency
-    #     cmap="viridis", alpha=0.7, edgecolors="black"
-    # )
-
-    # # Add labels to each point
-    # for i, row in frequency_distribution.iterrows():
-    #     plt.text(
-    #         row["Frequency"], row["Gene_Count"], str(row["Frequency"]),
-    #         fontsize=10, ha="right", va="bottom", fontweight="bold", color="black"
-    #     )
-
-    # # Plot settings
-    # plt.xscale("log")  # Log scale to spread out large values
-    # plt.yscale("log")  # Log scale for better visibility
-    # plt.xlabel("Number of Times a Gene Appears", fontsize=12)
-    # plt.ylabel("Number of Genes", fontsize=12)
-    # plt.title("Gene Occurrence Scatter Plot", fontsize=14)
-    # plt.colorbar(scatter, label="Gene Presence (Color Intensity)")
-    # plt.grid(True, which="both", linestyle="--", linewidth=0.5)
-
-    # # Save plot
-    # plt.savefig("result_files/gene_cardinality_scatterplot.png", dpi=300)
-    # plt.show()
