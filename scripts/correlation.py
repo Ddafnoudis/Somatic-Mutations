@@ -135,9 +135,9 @@ def correlation(categorical_dataset: DataFrame,
             edgecolors=['black', 'black'],
             linewidth=0.5)
 
-            # Add text labels for values
-            plt.text(midpoint + scaled_chi + 0.02, y, f'{chi:.2e}', va='center', ha='left', fontsize=10)
-            plt.text(midpoint - cramer - 0.02, y, f'{cramer:.2f}', va='center', ha='right', fontsize=10)
+            # Add text labels inside the bars
+            plt.text(midpoint + scaled_chi / 2, y, f'{chi:.2e}', va='center', ha='center', fontsize=8, color='black', fontweight='bold')
+            plt.text(midpoint - cramer / 2, y, f'{cramer:.2f}', va='center', ha='center', fontsize=8, color='black', fontweight='bold')
 
         # Vertical reference line at midpoint
         plt.axvline(midpoint, color='black', linewidth=1, linestyle='dashed')
