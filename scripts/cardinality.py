@@ -89,4 +89,3 @@ def cardinality(filtered_data):
 
 if __name__=="__main__":
     cardinality()
-    
