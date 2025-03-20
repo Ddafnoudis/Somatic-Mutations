@@ -2,10 +2,9 @@
 A script that plots the number of genes in the dataset,
 and preprocess data, aiming to reduce cardinality effects.
 """
-from category_encoders import TargetEncoder
-import pandas as pd
+import os
 import matplotlib.pyplot as plt
-import seaborn as sns
+from category_encoders import TargetEncoder
 
 
 def cardinality(filtered_data):
@@ -23,7 +22,7 @@ def cardinality(filtered_data):
         frequency_distribution = hugo_counts.value_counts().rename_axis("Frequency").reset_index(name="Gene_Count")
 
         # Save the frequency distribution
-        frequency_distribution.to_csv("result_files/frequency_distribution.tsv", sep="\t", index=False)
+        # frequency_distribution.to_csv("result_files/frequency_distribution.tsv", sep="\t", index=False)
 
         # Scatter plot
         plt.figure(figsize=(12, 6))
@@ -53,7 +52,7 @@ def cardinality(filtered_data):
         # Log scale for better visibility
         plt.yscale("log")  
         # Labels
-        plt.xlabel("Gene preesence", fontsize=12)
+        plt.xlabel("Gene presence count", fontsize=12)
         plt.ylabel("Number of Genes", fontsize=12)
         # Title
         plt.title("Gene Occurrence Scatter Plot", fontsize=14)
@@ -61,8 +60,12 @@ def cardinality(filtered_data):
         # Remove background lines
         plt.grid(False, which="both")
 
+        # Create folder
+        if not os.path.exists("result_files/cardinality"):
+            os.makedirs("result_files/cardinality")
+        
         # Save plot
-        plt.savefig("result_files/gene_cardinality_scatterplot.png", dpi=300)
+        plt.savefig("result_files/cardinality/gene_cardinality_scatterplot.png", dpi=300)
         # Show plot
         # plt.show()
 
@@ -78,8 +81,7 @@ def cardinality(filtered_data):
         # Replace the original Hugo_Symbol column with the encoded one
         filtered_data["Hugo_Symbol"] = hugo_symbol_encoded
         # Save the preprocessed data
-        filtered_data.to_csv("result_files/cardinality_preprocessed.tsv", sep="\t", index=False)
-
+        filtered_data.to_csv("datasets/full_data.tsv", sep="\t", index=False)
 
     # Execute function
     plot_cardinality(filtered_data)

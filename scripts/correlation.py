@@ -21,7 +21,7 @@ def correlation(categorical_dataset: DataFrame,
     """
     Compute the correlation between categorical and numerical features.
     - ANOVA F-value: numerical dataset
-    - Cramér's V statistic: categorical dataset
+    - Chi-square and Cramér's V statistic: categorical dataset
     """
 
     def anova_correlation(numerical_dataset, target):
@@ -91,7 +91,7 @@ def correlation(categorical_dataset: DataFrame,
 
     def plot_categorical_correlation(chi_results):
         """
-        Plots the Chi-Square correlation matrix with a publication-ready format.
+        Plots the Chi-Square correlation matrix.
         """
         # Figure size
         plt.figure(figsize=(12, 6))
@@ -106,6 +106,21 @@ def correlation(categorical_dataset: DataFrame,
         plt.tight_layout()
         plt.savefig('result_files/correlation_folder/categorical_correlation.png', dpi=300)
         # plt.show()
+
+        # Figure size
+        plt.figure(figsize=(12, 6))
+        # Violin plot
+        sns.barplot(data=chi_results, y="cramers-v", x="Feature", palette="magma")
+        
+        plt.title('Chi-Square Correlation Matrix', fontsize=14, fontweight='bold')
+        plt.xlabel('Feature', fontsize=12)
+        plt.ylabel('cramers-v', fontsize=12)
+        plt.xticks(rotation=45, ha='right', fontsize=10)
+        plt.yticks(fontsize=10)
+        plt.tight_layout()
+        plt.savefig('result_files/correlation_folder/categorical_correlation.png', dpi=300)
+        plt.show();exit()
+
 
     def plot_numerical_correlation(anova_results):
         """
