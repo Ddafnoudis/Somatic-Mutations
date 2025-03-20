@@ -69,10 +69,15 @@ def correlation(categorical_dataset: DataFrame,
         """
         Calculates the Chi-Square statistic for categorical features.
         """
-        # Compute Cramer's V for each categorical feature
-        effect_sizes = [cramers_v(categorical_dataset[col], target) for col in categorical_dataset.columns]
-        # Compute the Chi-Square score and p-value
+        # Compute Cramér's V for each categorical feature
+        effect_sizes = [round(cramers_v(categorical_dataset[col], target), 2) for col in categorical_dataset.columns]
+
+        # Compute the Chi-Square score and p-values
         chi_scores, p_values = chi2(pd.get_dummies(categorical_dataset), target)
+
+        # Round Chi-Square scores to whole numbers and p-values to 3 decimal places
+        chi_scores = [round(score) for score in chi_scores]
+        p_values = [round(p, 3) for p in p_values]
         
         # Create a dataframe with the Chi-Square score and p-value
         chi_results = pd.DataFrame({
@@ -93,35 +98,70 @@ def correlation(categorical_dataset: DataFrame,
         """
         Plots the Chi-Square correlation matrix.
         """
-        # Figure size
-        plt.figure(figsize=(12, 6))
-        # Violin plot
-        sns.barplot(data=chi_results, y="Chi-Square Score", x="Feature", palette="magma")
+            # Sorting features by Chi-Square Score in ascending order
+        chi_results = chi_results.sort_values(by="Chi-Square Score", ascending=True)
+
+        labels = chi_results["Feature"].values
+        chi_values = chi_results["Chi-Square Score"].values
+        cramer_values = chi_results["cramers-v"].values
+
+        # Convert Chi-Square values to float
+        chi_values = np.array(chi_values, dtype=float)  
+
+        # Rescale Chi-Square Scores to align with Cramér's V values
+        scaled_chi_values = (chi_values - chi_values.min()) / (chi_values.max() - chi_values.min())
+        scaled_chi_values = scaled_chi_values * (cramer_values.max() - cramer_values.min()) + cramer_values.min()
+
+        midpoint = 0
+
+        # Define colors
+        color_low = '#6A5ACD' 
+        color_high = '#FF4500'  
+
+        # Y positions for bars
+        ys = np.arange(len(labels))  
+
+        plt.figure(figsize=(12, 8))
+        for y, chi, cramer, scaled_chi in zip(ys, chi_values, cramer_values, scaled_chi_values):
+
+            plt.broken_barh([
+                (midpoint, scaled_chi),
+                # Negative to position on the left
+                (midpoint, -cramer)  
+            ],
+            # Bar thickness
+            (y - 0.4, 0.8),  
+            facecolors=[color_high, color_low],
+            edgecolors=['black', 'black'],
+            linewidth=0.5)
+
+            # Add text labels for values
+            plt.text(midpoint + scaled_chi + 0.02, y, f'{chi:.2e}', va='center', ha='left', fontsize=10)
+            plt.text(midpoint - cramer - 0.02, y, f'{cramer:.2f}', va='center', ha='right', fontsize=10)
+
+        # Vertical reference line at midpoint
+        plt.axvline(midpoint, color='black', linewidth=1, linestyle='dashed')
+
+        # Remove x-axis labels and ticks
+        plt.xticks([])
         
-        plt.title('Chi-Square Correlation Matrix', fontsize=14, fontweight='bold')
-        plt.xlabel('Feature', fontsize=12)
-        plt.ylabel('Chi-Square Correlation', fontsize=12)
-        plt.xticks(rotation=45, ha='right', fontsize=10)
-        plt.yticks(fontsize=10)
-        plt.tight_layout()
-        plt.savefig('result_files/correlation_folder/categorical_correlation.png', dpi=300)
-        # plt.show()
+        # Set labels and aesthetics
+        plt.xlabel("Scores", fontsize=14)
+        plt.yticks(ys, labels)
+        plt.title("Features Cramer's V and Chi-Square chart", fontsize=14, fontweight='bold')
+        plt.ylim(-0.5, len(labels) - 0.5)
+        plt.tick_params(left=False)
 
-        # Figure size
-        plt.figure(figsize=(12, 6))
-        # Violin plot
-        sns.barplot(data=chi_results, y="cramers-v", x="Feature", palette="magma")
-        
-        plt.title('Chi-Square Correlation Matrix', fontsize=14, fontweight='bold')
-        plt.xlabel('Feature', fontsize=12)
-        plt.ylabel('cramers-v', fontsize=12)
-        plt.xticks(rotation=45, ha='right', fontsize=10)
-        plt.yticks(fontsize=10)
-        plt.tight_layout()
-        plt.savefig('result_files/correlation_folder/categorical_correlation.png', dpi=300)
-        plt.show();exit()
+        # Remove the frame/box lines
+        for spine in plt.gca().spines.values():
+            spine.set_visible(False)
 
+        # Save the plot
+        plt.savefig('result_files/correlation_folder/chi_cramers_feat.png', dpi=300)
+        # Show plot
+        plt.show()
 
+    
     def plot_numerical_correlation(anova_results):
         """
         Plots the ANOVA correlation matrix with a publication-ready format.

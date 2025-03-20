@@ -67,7 +67,7 @@ def cardinality(filtered_data):
         # Save plot
         plt.savefig("result_files/cardinality/gene_cardinality_scatterplot.png", dpi=300)
         # Show plot
-        # plt.show()
+        plt.show()
 
 
     def cardinality_prepr(filtered_data):
