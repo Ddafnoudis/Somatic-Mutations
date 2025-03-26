@@ -1,11 +1,15 @@
 """
 """
+from lightning import seed_everything
 from scripts.config_fun import parse_configuration_files
 from scripts.condition_statements import condition_statement
 
 
 def main():
     config = parse_configuration_files(fname='configuration.yaml')
+    
+    # Seed everything
+    seed_everything(config["SEED"], workers=True)
 
     condition_statement(
         working_gene_dir=config["WORK_GENE_DIR"],
@@ -32,9 +36,7 @@ def main():
         rf_best_parameters=config["RF_BEST_PARAMS"],
         mlp_results=config["MLP_RESULTS"], 
         best_params = config["BEST_PARAMS"],
-        rf_parameters=config["RF_PARAMS"], 
         epochs=config["EPOCHS"], 
-        param_grid=config["PARAM_GRID"]
         )
 
 
