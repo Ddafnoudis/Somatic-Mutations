@@ -26,7 +26,8 @@ plotly==5.9.0
 scikit-learn==1.4.2
 scikit-optimize==0.10.2
 pyaml==25.1.0           
-scipy==1.11.4 
+scipy==1.11.4
+lightning==2.5.1
 lazypredict==0.2.12                
 seaborn==0.12.2                  
 ```
