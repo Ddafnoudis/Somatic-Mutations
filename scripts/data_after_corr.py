@@ -5,7 +5,6 @@ removing features with a p-value < 0.05.
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
-from category_encoders import TargetEncoder
 
 
 def data_after_correlation(full_data, corr_folder, significant_threshold)-> DataFrame:
