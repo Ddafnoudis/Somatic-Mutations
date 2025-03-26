@@ -1,34 +1,166 @@
 """
 Random Forest hyperparameter tuning
 """
+import os
+import numpy as np
+import seaborn as sns
 from typing import Dict
+import matplotlib.pyplot as plt
+from skopt import BayesSearchCV
+from skopt.callbacks import VerboseCallback
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import RandomizedSearchCV
+from sklearn.metrics import balanced_accuracy_score, make_scorer, precision_score, recall_score, f1_score
 
 
-def random_forest_tuning(X_train, y_train, seed: int, forest_params: Dict)-> Dict:
+
+class PlottingCallback:
     """
-    Tuning process for Random Forest
+    Custom callback to plot scoring metrics during Bayesian optimization.
     """
-    # Instantiate the Random Forest Classifier
+    def __init__(self):
+        self.iterations = []
+        self.scores = []
+
+    def __call__(self, optim_result):
+        # Append the iteration number and score
+        self.iterations.append(len(self.iterations) + 1)
+        self.scores.append(optim_result.fun)
+        
+        # Live plot update
+        plt.figure(figsize=(8, 5))
+        sns.lineplot(x=self.iterations, y=self.scores, marker='o')
+        plt.xlabel("Iteration")
+        plt.ylabel("Balanced Accuracy")
+        plt.title("Bayesian Optimization Progress")
+        plt.grid()
+        plt.show()
+        plt.pause(0.1)  # Pause to update the plot
+        # plt.tight_layout()
+
+
+
+def random_forest_tuning(X_train, y_train, X_test, y_test, search_space_rf: Dict) -> Dict:
+    """
+    Performs Bayesian optimization for Random Forest hyperparameters with Balanced Accuracy optimization.
+    
+    Parameters:
+    - X_train, X_test: np.ndarray, training/testing features
+    - y_train, y_test: np.ndarray, training/testing labels
+    - search_space_rf: Dict, hyperparameter search space
+    
+    Returns:
+    - Dict containing the best hyperparameters found
+    """
+    y_train = np.ravel(y_train)  # Flatten target
     rfc = RandomForestClassifier()
-
-    rfc_search = RandomizedSearchCV(estimator=rfc,
-                                    param_distributions=forest_params,
-                                    scoring="balanced_accuracy",
-                                    cv=5, random_state=seed,
-                                    verbose=2)
-    # Fit the model
-    rfc_search.fit(X_train, y_train)
-    # Best parameters
+    
+    rfc_search = BayesSearchCV(
+        estimator=rfc,
+        search_spaces=search_space_rf,
+        n_iter=10,
+        n_jobs=-1,
+        scoring={
+            "balanced_accuracy": "balanced_accuracy",
+            "precision": make_scorer(precision_score, average="weighted"),
+            "recall": make_scorer(recall_score, average="weighted"),
+            "f1": make_scorer(f1_score, average="weighted")
+        },
+        refit="balanced_accuracy",
+        verbose=2,
+        cv=2,
+        return_train_score=True,
+    )
+    
+    print("Starting Bayesian Optimization...")
+    
+    # Instantiate the plotting callback
+    plot_callback = PlottingCallback()
+    
+    # Train model with callbacks for verbose logging and plotting
+    rfc_search.fit(X_train, y_train, callback=[VerboseCallback(n_total=10), plot_callback])
+    
+    print(f"The score is:\n{rfc_search.score(X_test, y_test):.4f}\n\n")
+    
     rf_best_params = rfc_search.best_params_
-    print(rf_best_params)
-
-    # Save the results
-    with open("result_files/rf_best_params.txt", "w") as f:
+    print("\nBest Parameters Found:", rf_best_params)
+    
+    best_model = rfc_search.best_estimator_
+    y_pred = best_model.predict(X_test)
+    balanced_acc = balanced_accuracy_score(y_test, y_pred)
+    print(f"Balanced Accuracy on Test Set: {balanced_acc:.4f}")
+    
+    os.makedirs("result_files/rf_folder", exist_ok=True)
+    with open("result_files/rf_folder/rf_best_params.txt", "w") as f:
         f.write(str(rf_best_params))
     
     return rf_best_params
+
+
+if __name__ == "__main__":
+    random_forest_tuning()
+
+
+# def random_forest_tuning(X_train, y_train, X_test, y_test, search_space_rf: Dict) -> Dict:
+#     """
+#     Performs Bayesian optimization for Random Forest hyperparameters with Balanced Accuracy optimization.
+ 
+#     Parameters:
+#     - X_train, X_test: np.ndarray, training/testing features
+#     - y_train, y_test: np.ndarray, training/testing labels
+#     - search_space_rf: Dict, hyperparameter search space
+ 
+#     Returns:
+#     - Dict containing the best hyperparameters found
+#     """
+#     # Flatten y_train (1D array)
+#     y_train = np.ravel(y_train)  
+ 
+#     rfc = RandomForestClassifier()
+ 
+#     # Optimize for balanced accuracy
+#     rfc_search = BayesSearchCV(
+#         estimator=rfc,
+#         search_spaces=search_space_rf,
+#         n_iter=10,
+#         n_jobs=-1,
+#         scoring={
+#             "balanced_accuracy": "balanced_accuracy",
+#             "precision": make_scorer(precision_score, average="weighted"),
+#             "recall": make_scorer(recall_score, average="weighted"),
+#             "f1": make_scorer(f1_score, average="weighted")
+#             },
+#         # Optimize for balanced accuracy when applying multiple metrics
+#         refit="balanced_accuracy",
+#         verbose=2,
+#         cv=2,
+#         return_train_score=True,
+#     )
+#     print(rfc_search.get_params().keys());exit()
+#     print("Starting Bayesian Optimization...")
+#     # 
+#     # Train the model
+#     rfc_search.fit(X_train, y_train, callback=[VerboseCallback(n_total=10)])
+ 
+#     print(f"The score is:\n{rfc_search.score(X_test, y_test)}\n\n")
+ 
+#     # Best model
+#     rf_best_params = rfc_search.best_params_
+#     print("\nBest Parameters Found:", rf_best_params)
+ 
+#     # Evaluate model
+#     best_model = rfc_search.best_estimator_
+#     y_pred = best_model.predict(X_test)
+ 
+#     # Compute Balanced Accuracy
+#     balanced_acc = balanced_accuracy_score(y_test, y_pred)
+#     print(f"Balanced Accuracy on Test Set: {balanced_acc:.4f}")
+ 
+#     # Save best parameters
+#     os.makedirs("result_files", exist_ok=True)
+#     with open("result_files/rf_folder/rf_best_params.txt", "w") as f:
+#         f.write(str(rf_best_params))
+ 
+#     return rf_best_params
 
 
 if __name__=="__main__":
