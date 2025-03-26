@@ -22,6 +22,5 @@ def full_dataframe(data):
     return features, target, target_classes
 
 
-
 if __name__ == "__main__":
     full_dataframe()
