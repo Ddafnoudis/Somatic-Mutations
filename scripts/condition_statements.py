@@ -3,9 +3,10 @@ Condition statements
 """
 import os
 import pandas as pd
-from typing import Dict
+from typing import Dict, List
 from pathlib import Path
-from scripts.trial import grid_search
+from scripts.config import create_model_search_space
+from scripts.trial import build_model, grid_search
 from scripts.correlation import correlation
 from scripts.check_shapes import check_shape
 from scripts.cardinality import cardinality
@@ -43,13 +44,15 @@ def condition_statement(working_gene_dir: Path,
                         lzp_results: Path, report_rf: Path, 
                         seed: int, best_params: Path, 
                         rf_best_parameters: Path, mlp_results: Path, 
-                        epochs: int, param_grid: Dict,
-                        rf_parameters: Dict):
+                        epochs: int,
+                        rf_parameters: Dict,
+                        mlp_model: List[Dict[str, int]]):
     """
     Create conditions statements for the presence of the
     results files you need to have in the result_files/
     folder
     """
+    # print(mlp_model);exit()
     # Clean data from missing values
     full_data = clean_dataframes()
 
@@ -151,14 +154,18 @@ def condition_statement(working_gene_dir: Path,
                 X_val=X_val, y_val=y_val, y_train_dl_reshaped=y_train_dl_reshaped,
                 y_test_dl_reshaped=y_test_dl_reshaped, y_val_dl_reshaped=y_val_dl_reshaped)
     
+    # Create the search space for the models
+    search_space_rf, search_space_mlp = create_model_search_space()
+    
     # Results of Random Forest
     if report_rf.exists() and rf_folder.exists():
         print(f"Random Forest has been completed. Location: {output_dir}/\n")
     else:
-        os.mkdir(rf_folder)
+        if not os.path.exists(rf_folder):
+            os.makedirs(rf_folder, exist_ok=True)
         # Random Forest hyperparameter tuning
         print("Starting Random Forest parameters tuning process!\n")
-        rf_best_params = random_forest_tuning(X_train=X_train, y_train=y_train, seed=seed, forest_params=rf_parameters)
+        rf_best_params = random_forest_tuning(X_train=X_train, y_train=y_train, search_space_rf=search_space_rf, X_test=X_test, y_test=y_test)
         # Perform a Random Forest classification
         print("Random Forest classification begins!\n")
         random_forest_train_test_validation(X_train=X_train, y_train=y_train,
@@ -179,11 +186,14 @@ def condition_statement(working_gene_dir: Path,
     if os.path.exists(best_params):
         print("Best params for the MLP exist!")
     else:
+        # Define the size of the features
+        feature_size = len(X_train.columns)
+        build_model(feature_size=feature_size, num_classes=num_classes, dropout_rate=mlp_model[""], learning_rate=0.001, neurons_1st=16, neurons_2nd=32, seed=seed)
         # MLP grid search optimization
         best_params = grid_search(X_train_dl=X_train, X_val_dl=X_val,
                                   y_train_dl=y_train_dl_reshaped, y_val_dl=y_val_dl_reshaped,
                                   epochs=epochs, num_classes=num_classes, 
-                                  seed=seed, param_grid=param_grid)
+                                  seed=seed)
 
 
     # Multilayer Perceptron (Sequential).
