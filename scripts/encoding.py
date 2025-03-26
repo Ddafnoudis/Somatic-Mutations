@@ -13,14 +13,23 @@ def encode_data(feat, tar, seed):
     """
     Encode data
     """
-    feat_str = feat.astype(str)
-    # One hot encoding
-    features_enc = pd.get_dummies(feat_str, drop_first=True, dtype=int)
+    # Exclude numerical features from one-hot encoding
+    numerical_features = ['Start_Position', 'Hugo_Symbol']
+    categorical_features = feat.drop(columns=numerical_features)
+    
+    # One hot encoding for categorical features
+    categorical_features_enc = pd.get_dummies(categorical_features.astype(str), drop_first=True, dtype=int)
+    
+    # Combine numerical and encoded categorical features
+    features_enc = pd.concat([feat[numerical_features], categorical_features_enc], axis=1)
+    
     print(f"Encoding Features shape: {features_enc.shape}")
-    # Label Encoding
+    
+    # Label Encoding for target
     lb = LabelEncoder()
     target_enc = lb.fit_transform(tar)
     target_enc = pd.DataFrame(target_enc, columns=["Disease_Type"])
+    
     # Shuffle the data
     features_enc, target_enc = shuffle(features_enc, target_enc, random_state=seed)   
     
