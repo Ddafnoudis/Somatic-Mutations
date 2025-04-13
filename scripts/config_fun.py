@@ -14,8 +14,6 @@ def parse_configuration_files(fname) -> Dict[int, str]:
     with open(fname) as stream:
         config = yaml.safe_load(stream)
     
-    config['WORK_GENE_DIR'] = Path(config['WORK_GENE_DIR'])
-    config['DATASET'] = Path(config['DATASET'])
     config["CORR_FOLDER"] = Path(config["CORR_FOLDER"])
     config["DATASET_SOMATIC_MUTATION"] = Path(config['DATASET_SOMATIC_MUTATION'])
     config["SIGNIFICANT_THRESHOLD"] = float(config["SIGNIFICANT_THRESHOLD"])
@@ -31,12 +29,8 @@ def parse_configuration_files(fname) -> Dict[int, str]:
     config['WORK_DIR'] = Path(config['WORK_DIR'])
     config['DATASET'] = Path(config['DATASET'])
     config['OUTPUT_DIR'] = Path(config['OUTPUT_DIR'])
-    config['CORR_IMAGE'] = Path(config['CORR_IMAGE'])
-    config['CORR_RESULTS'] = Path(config['CORR_RESULTS'])
     config['LZP_RESULTS'] = Path(config['LZP_RESULTS'])
-    config['ANOVA'] = Path(config["ANOVA"])
     config["RF_FOLDER"] = Path(config["RF_FOLDER"])
-    config['MIT'] = Path(config["MIT"])
     config['CROSS_VAL'] = Path(config['CROSS_VAL'])
     config['ACCURACY'] = Path(config['ACCURACY'])
     config['REPORT_RF'] = Path(config['REPORT_RF'])
