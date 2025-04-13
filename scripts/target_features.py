@@ -12,10 +12,10 @@ def full_dataframe(data):
     # Define features
     features = data.iloc[:, :-1]
     # Print features
-    print(f"Features shape and features: \n{features.shape}\n{features}")
+    print(f"Features shape and features: \n{features.shape}\n{features.head()}")
     # Define the target
     target = data["Disease_Type"]
-    print(f"Target shape and target: \n{target.shape}\n{target}")
+    print(f"Target shape and target: \n{target.shape}\n{target.head()}")
     # Define the target classes
     target_classes = target.unique().tolist()
 
