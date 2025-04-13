@@ -1,7 +1,5 @@
 #### Upstream analysis ####
 
-# Working directory for mutational analysis
-WORK_GENE_DIR: "scripts_gene_analysis/"
 # Dataset for the analysis of somatic mutations
 DATASET_SOMATIC_MUTATION: "datasets/full_columns_data.tsv"
 # Directory for Leukemia gene lists
@@ -27,6 +25,10 @@ AML_PLOT: "scripts_gene_analysis/hallmark/enr_plots/Acute Myeloid Leukemia_plot.
 SEED: 42
 # Assess statistical significance of the correlations
 SIGNIFICANT_THRESHOLD: 0.050
+# Optimal number of trees
+N_OPTIMAL_TREES: 200
+# Epochs
+EPOCHS: 500
 
 # Data path
 WORK_DIR: 'Somatic-Mutations/'
@@ -34,15 +36,11 @@ DATASET: 'datasets/full_data.tsv'
 OUTPUT_DIR: 'result_files/'
 # Correlation matrix cramers_v
 CORR_FOLDER: "result_files/correlation_folder/"
-CORR_IMAGE: 'result_files/correlation_folder/categorical_correlation.png'
-CORR_RESULTS: 'result_files/correlation_folder/correlation_results.txt'
-# Feature Selection
-ANOVA: 'result_files/ANOVA_F_value_feature_importance.png'
-MIT: 'result_files/mutual_info_class.png'
-# Optimal number of trees
-N_OPTIMAL_TREES: 200
+
+
 # Lazy predict results
-LZP_RESULTS: 'result_files/lzp_results.tsv'
+LZP_RESULTS: 'result_files/lzp/'
+
 # Random Forest results
 RF_FOLDER: "result_files/rf_folder"
 CROSS_VAL: 'result_files/rf_folder/cv_score.txt'
@@ -50,9 +48,9 @@ ACCURACY: 'result_files/rf_folder/accuracy.txt'
 RF_BEST_PARAMS: 'result_files/rf_folder/rf_best_params.txt'
 REPORT_RF: 'result_files/rf_folder/class_report.txt'
 CONFUSION_MTX: 'result_files/rf_folder/confusion_mtx.txt'
-# Best parameters
+
+# Best parameters MLP
 BEST_PARAMS: 'result_files/best_params.txt'
-# Epochs
-EPOCHS: 500
+
 # Multilayer Perceptron
 MLP_RESULTS: 'result_files/mlp_folder/validation_results.txt'
