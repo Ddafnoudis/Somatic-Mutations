@@ -12,7 +12,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import balanced_accuracy_score, make_scorer, precision_score, recall_score, f1_score
 
 
-
 class PlottingCallback:
     """
     Custom callback to plot scoring metrics during Bayesian optimization.
@@ -38,7 +37,6 @@ class PlottingCallback:
         # plt.tight_layout()
 
 
-
 def random_forest_tuning(X_train, y_train, X_test, y_test, search_space_rf: Dict) -> Dict:
     """
     Performs Bayesian optimization for Random Forest hyperparameters with Balanced Accuracy optimization.
@@ -60,7 +58,7 @@ def random_forest_tuning(X_train, y_train, X_test, y_test, search_space_rf: Dict
         n_iter=10,
         n_jobs=-1,
         scoring={
-            "balanced_accuracy": "balanced_accuracy",
+            "balanced_accuracy": make_scorer(balanced_accuracy_score),
             "precision": make_scorer(precision_score, average="weighted"),
             "recall": make_scorer(recall_score, average="weighted"),
             "f1": make_scorer(f1_score, average="weighted")
@@ -97,71 +95,4 @@ def random_forest_tuning(X_train, y_train, X_test, y_test, search_space_rf: Dict
 
 
 if __name__ == "__main__":
-    random_forest_tuning()
-
-
-# def random_forest_tuning(X_train, y_train, X_test, y_test, search_space_rf: Dict) -> Dict:
-#     """
-#     Performs Bayesian optimization for Random Forest hyperparameters with Balanced Accuracy optimization.
- 
-#     Parameters:
-#     - X_train, X_test: np.ndarray, training/testing features
-#     - y_train, y_test: np.ndarray, training/testing labels
-#     - search_space_rf: Dict, hyperparameter search space
- 
-#     Returns:
-#     - Dict containing the best hyperparameters found
-#     """
-#     # Flatten y_train (1D array)
-#     y_train = np.ravel(y_train)  
- 
-#     rfc = RandomForestClassifier()
- 
-#     # Optimize for balanced accuracy
-#     rfc_search = BayesSearchCV(
-#         estimator=rfc,
-#         search_spaces=search_space_rf,
-#         n_iter=10,
-#         n_jobs=-1,
-#         scoring={
-#             "balanced_accuracy": "balanced_accuracy",
-#             "precision": make_scorer(precision_score, average="weighted"),
-#             "recall": make_scorer(recall_score, average="weighted"),
-#             "f1": make_scorer(f1_score, average="weighted")
-#             },
-#         # Optimize for balanced accuracy when applying multiple metrics
-#         refit="balanced_accuracy",
-#         verbose=2,
-#         cv=2,
-#         return_train_score=True,
-#     )
-#     print(rfc_search.get_params().keys());exit()
-#     print("Starting Bayesian Optimization...")
-#     # 
-#     # Train the model
-#     rfc_search.fit(X_train, y_train, callback=[VerboseCallback(n_total=10)])
- 
-#     print(f"The score is:\n{rfc_search.score(X_test, y_test)}\n\n")
- 
-#     # Best model
-#     rf_best_params = rfc_search.best_params_
-#     print("\nBest Parameters Found:", rf_best_params)
- 
-#     # Evaluate model
-#     best_model = rfc_search.best_estimator_
-#     y_pred = best_model.predict(X_test)
- 
-#     # Compute Balanced Accuracy
-#     balanced_acc = balanced_accuracy_score(y_test, y_pred)
-#     print(f"Balanced Accuracy on Test Set: {balanced_acc:.4f}")
- 
-#     # Save best parameters
-#     os.makedirs("result_files", exist_ok=True)
-#     with open("result_files/rf_folder/rf_best_params.txt", "w") as f:
-#         f.write(str(rf_best_params))
- 
-#     return rf_best_params
-
-
-if __name__=="__main__":
     random_forest_tuning()
