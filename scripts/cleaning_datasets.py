@@ -49,11 +49,11 @@ def clean_dataframes():
     # The intersection() method returns a set that contains the similarity between two or more sets.
     common_columns = columns_all_2015.intersection(columns_all_2016, columns_laml_2018, columns_cll_2015)
 
-    # Get the uncommon columns
-    uncommon_columns_all_2015 = columns_all_2015 - common_columns
-    uncommon_columns_all_2016 = columns_all_2016 - common_columns
-    uncommon_columns_laml_2018 = columns_laml_2018 - common_columns
-    uncommon_columns_cll_2015 = columns_cll_2015 - common_columns
+    # # Get the uncommon columns
+    # uncommon_columns_all_2015 = columns_all_2015 - common_columns
+    # uncommon_columns_all_2016 = columns_all_2016 - common_columns
+    # uncommon_columns_laml_2018 = columns_laml_2018 - common_columns
+    # uncommon_columns_cll_2015 = columns_cll_2015 - common_columns
 
     # Drop the columns that are not in the common_columns
     concatenated_common_collumns = pd.concat(dfs_list, join="inner", ignore_index=True)
