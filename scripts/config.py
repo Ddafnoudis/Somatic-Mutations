@@ -15,7 +15,7 @@ def create_model_search_space(hidden_layer_options)-> Dict[str, Tuple[int, int]]
     Creates a search space for Multilayer Perceptron hyperparameter optimization.
     
     Returns:
-        Two dictionaris for RF and MLP models.
+        Two dictionaries for RF and MLP, respectively.
     """
     # RF search space
     search_space_rf = {
@@ -30,18 +30,17 @@ def create_model_search_space(hidden_layer_options)-> Dict[str, Tuple[int, int]]
 
     # Define mapping of index → actual hidden layer tuple
     """
-    Adapt your existing search_space_mlp_ (with tuple-style hidden_layer_sizes) 
-    to fit the flattened integer-based space inside the MLPWrapper.
-    Convert your config into an index-based categorical and 
-    map it to the actual tuples inside the wrapper.
+    Search space for MLP model optimization.
     """
     # MLP search space
     search_space_mlp_ = {
         # Number of neurons in each hidden layer (1 to 3 layers, each 10–100 neurons)
-        'hidden_layer_idx': Integer(0, len(hidden_layer_options)-1),
+        'hidden_layer_sizes': Integer(0, len(hidden_layer_options)-1),
         'activation': Categorical(['relu', 'tanh']),
         'alpha': Real(1e-2, 1e-1, prior='log-uniform'),
-        'learning_rate_init': Real(1e-4, 1e-1, prior='log-uniform'),
+        'learning_rate': Real(1e-4, 1e-1, prior='log-uniform'),
+        'batch_size': Integer(32, 200),
+        'dropout_rate': Real(0.1, 0.5, prior='uniform'),
         }
 
     return search_space_rf, search_space_mlp_
