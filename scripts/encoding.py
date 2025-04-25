@@ -4,14 +4,16 @@
 """
 import numpy as np
 import pandas as pd
+from pandas import DataFrame
 from sklearn.utils import shuffle
 from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 
-def encode_data(feat, tar, seed):
+def encode_data(feat, tar, seed)-> DataFrame:
     """
-    Encode data
+    Encode data for Random Forest
     """
     # Exclude numerical features from one-hot encoding
     numerical_features = ['Start_Position', 'Hugo_Symbol']
@@ -36,9 +38,14 @@ def encode_data(feat, tar, seed):
     return features_enc, target_enc
 
 
-def stratified_k_fold(feat_enc, tar_enc, target_classes_dl, seed):
+def stratified_k_fold(feat_enc, tar_enc, target_classes_dl, seed)-> np.array:
     """
-    Stratified K-fold
+    Stratified K-fold.
+    
+    Returns:
+        The train, test and validation sets into np.array format.
+        The MetaPerceptron package requires the data to be in np.array format 
+        for optimization, training and evaluation.
     """
     # Stratified K-Fold cross-validation
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
@@ -49,18 +56,26 @@ def stratified_k_fold(feat_enc, tar_enc, target_classes_dl, seed):
     # Validation set
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25, random_state=seed)
 
-    # Define the number of classes
-    num_classes = len(np.unique(target_classes_dl))
-    # Reshape the target values
-    y_train_dl_resh = np.eye(num_classes)[y_train]
-    y_test_dl_resh = np.eye(num_classes)[y_test]
-    y_val_dl_resh = np.eye(num_classes)[y_val]
-    # Remove the extra dimension
-    y_train_dl_reshaped = np.squeeze(y_train_dl_resh)
-    y_test_dl_reshaped = np.squeeze(y_test_dl_resh)
-    y_val_dl_reshaped = np.squeeze(y_val_dl_resh)
+     # Feature scaling
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+    X_val = scaler.transform(X_val)
 
-    return X_train, X_test, X_val, y_train, y_test, y_val, y_train_dl_reshaped, y_test_dl_reshaped, y_val_dl_reshaped, num_classes 
+    # Convert to numpy arrays
+    y_train = y_train.values.ravel()
+    y_test = y_test.values.ravel()
+    y_val = y_val.values.ravel()
+
+    # List of splitted data
+    dt_list = [X_train, X_test, X_val, y_train, y_test, y_val]
+    # Iterate over the dt_list
+    for dt in dt_list:
+        # Print the type of each element in the list
+        print(type(dt))
+        continue
+
+    return X_train, X_test, X_val, y_train, y_test, y_val
 
 
 if __name__ == "__main__":
