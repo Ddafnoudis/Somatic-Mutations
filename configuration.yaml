@@ -28,7 +28,7 @@ SIGNIFICANT_THRESHOLD: 0.050
 # Optimal number of trees
 N_OPTIMAL_TREES: 200
 # Epochs
-EPOCHS: 500
+EPOCHS: 100
 
 # Data path
 WORK_DIR: 'Somatic-Mutations/'
@@ -50,7 +50,10 @@ REPORT_RF: 'result_files/rf_folder/class_report.txt'
 CONFUSION_MTX: 'result_files/rf_folder/confusion_mtx.txt'
 
 # Best parameters MLP
-BEST_PARAMS: 'result_files/best_params.txt'
+BEST_PARAMS: 'result_files/mlp_folder/best_params.txt'
 
 # Multilayer Perceptron
-MLP_RESULTS: 'result_files/mlp_folder/validation_results.txt'
+MLP_RESULTS: 'result_files/mlp_folder/'
+
+# MLP best model 
+BEST_MODEL: "result_files/mlp_folder/MlpModel.keras"
