@@ -6,8 +6,8 @@ Returns:
     - Cramers V correlation tsv file
     - Categorical correlation heatmap
 """
-import pandas as pd
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from pandas import DataFrame
 import matplotlib.pyplot as plt

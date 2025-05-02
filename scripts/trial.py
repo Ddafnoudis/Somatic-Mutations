@@ -3,109 +3,436 @@ A scripts that searches the best hyperparameters for a
 multilayer perceptron model.
 """
 import os
+import time
 import keras
 import random
+import itertools
 import numpy as np
-from typing import Dict
+import seaborn as sns
 import tensorflow as tf
 from keras import layers
-from keras import callbacks
-from sklearn.metrics import balanced_accuracy_score
-
+from typing import Dict, Any
+from datetime import timedelta
+import matplotlib.pyplot as plt
+from skopt import BayesSearchCV
+from sklearn.preprocessing import label_binarize
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.utils.class_weight import compute_class_weight
+from sklearn.metrics import balanced_accuracy_score, classification_report, make_scorer, precision_score, recall_score, f1_score, roc_curve, auc, confusion_matrix
 
 # Set seeds for reproducibility
 random.seed(42)
-np.random.seed(42)
+np.random.seed(42) 
 tf.random.set_seed(42)
 
 # Ensure TensorFlow operations are deterministic
 os.environ['TF_DETERMINISTIC_OPS'] = '1'
-os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Disable GPU if necessary for exact reproducibility
+# Disable GPU if necessary for exact reproducibility
+os.environ['CUDA_VISIBLE_DEVICES'] = '' 
 
 
-
-def grid_search(X_train_dl, X_val_dl, y_train_dl, y_val_dl, epochs, num_classes, param_grid, seed) -> Dict[str, float]:
+def optimization(X_train, X_val, y_train, y_val, 
+                 search_space, epochs, feature_size,
+                 seed, best_params_path, hidden_layer_options,
+                 num_classes, best_model_path)-> Dict[str, int] | Any:
     """
-    Create a for loop to iterate over the hyperparameters
-    and return the best parameters.
+    Perform hyperparameter optimization for a 
+    multilayer perceptron (MLP) using Bayesian search.
+
+    The search space defines hidden_layer_sizes as an integer 
+    between 0 and 5. This integer represents the index in 
+    the HIDDEN_LAYER_OPTIONS list. 
+    Adapt the search_space_mlp_ (with tuple-style hidden_layer_sizes) 
+    to fit the flattened integer-based space inside the MLPWrapper.
+    Convert your config into an index-based categorical and 
+    map it to the actual tuples inside the wrapper.
+    
+    Args:
+        X_train (array-like): Training feature data
+        X_val (array-like): Validation feature data
+        y_train (array-like): Training target labels
+        y_val (array-like): Validation target labels
+        search_space (dict): Hyperparameter search space for Bayesian optimization
+        epochs (int): Number of training epochs
+        feature_size (int): Number of input features
+        seed (int): Random seed for reproducibility
+        best_params_path (str): File path to save best hyperparameters
+        hidden_layer_options (list): List of possible hidden layer configurations
+        num_classes (int): Number of output classes
+    
+    Returns:
+        Dict: A tuple containing the best hyperparameters
+        HDF5 format: The best MLP model
     """
-    # Define the size of the features
-    feature_size = len(X_train_dl.columns)
+    # Start time (calculate duration)
+    start_time = time.perf_counter()
+    print(f"Start time: {start_time}")
 
-    # Initialize best score and best parameters
-    best_score = 0
-    best_params = None
+    class KerasMLP(BaseEstimator, ClassifierMixin):
+        def __init__(self, hidden_layer_sizes=None, activation='relu', 
+                    alpha=None, learning_rate=None, 
+                    batch_size=32, dropout_rate=0.1,
+                    hidden_layer_options=None, seed=42):
+            # Initialize Hyperparameters
+            self.hidden_layer_sizes: int = hidden_layer_sizes # Index of the hidden layer sizes
+            self.hidden_layer_options: list[tuple] = hidden_layer_options 
+            self.activation: str = activation
+            self.alpha: float = alpha
+            self.learning_rate: float = learning_rate
+            self.batch_size: int = batch_size
+            self.seed: int = seed
+            self.dropout_rate: float = dropout_rate
+            # Delay model creation
+            self.model = None
 
-    # Iterate over the parameters
-    for dropout_rate in param_grid['dropout_rate']:
-        for learning_rate in param_grid['learning_rate']:
-            for batch_size in param_grid['batch_size']:
-                for neurons_1st in param_grid['neurons_1st_layer']:
-                    for neurons_2nd in param_grid['neurons_2nd_layer']:
-                        # Ensure the second layer has twice the number of neurons in the first layer
-                        if neurons_2nd == neurons_1st * 2:
-                            # Build the model
-                            model = keras.Sequential([
-                                layers.Input(shape=(feature_size, )),
-                                layers.Dense(neurons_1st, activation="relu", kernel_initializer=keras.initializers.he_normal(seed=seed)),
-                                layers.Dropout(dropout_rate),
-                                layers.Dense(neurons_2nd, activation="relu", kernel_initializer=keras.initializers.he_normal(seed=seed)),
-                                layers.Dropout(dropout_rate),
-                                layers.Dense(num_classes, activation="softmax", kernel_initializer=keras.initializers.he_normal(seed=seed))
-                            ])
+        def _build_model(self):
+            # Sequential model
+            model = keras.Sequential()
+            # Input size
+            model.add(layers.Input(shape=(feature_size, )))
 
-                            # Define the metrics
-                            metrics_ = [
-                                keras.metrics.CategoricalCrossentropy(name='categorical_crossentropy'),  # same as model's loss
-                                keras.metrics.CategoricalAccuracy(name="categorical_accuracy", dtype=None),
-                                keras.metrics.Precision(name='precision'),
-                                keras.metrics.Recall(name='recall'),
-                                keras.metrics.AUC(name='auc'),
-                                keras.metrics.AUC(name='prc', curve='PR'), # precision-recall curve
-                            ]
+            # Use the selected hidden layer configuration
+            hidden_layers: tuple = self.hidden_layer_options[self.hidden_layer_sizes]
+            # Add hidden layers
+            for units in hidden_layers:
+                print(f"Adding layer with {units} units\n")
+                # Dense layer with given units and activation
+                model.add(layers.Dense(units,
+                                       activation=self.activation,
+                                       kernel_regularizer=keras.regularizers.l2(self.alpha),
+                                       kernel_initializer=keras.initializers.HeNormal(seed=self.seed)))
+                # Dropout layer
+                model.add(layers.Dropout(self.dropout_rate))
+            
+            # Output layer
+            model.add(layers.Dense(num_classes, activation='softmax',
+                                   kernel_initializer=keras.initializers.HeNormal(seed=self.seed)))
+            
+            # Compile the model
+            model.compile(optimizer=keras.optimizers.Adam(learning_rate=self.learning_rate),
+                       metrics=[
+                       # Calculates how often predictions match integer labels
+                         keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
+                         # Calculates the crossentropy loss between the labels and predictions
+                         keras.metrics.SparseCategoricalCrossentropy(name="loss"),
+                     ],
+                     loss="sparse_categorical_crossentropy")
+            
+            return model
+               
+        # Fit method for the model
+        def fit(self, X, y):
+            self.model = self._build_model()
+            # Enhanced callbacks
+            callbacks = [
+                TrainingPlotter(validation_data=(X_val, y_val)),
+                keras.callbacks.EarlyStopping(
+                    monitor='val_loss',
+                    patience=5,
+                    restore_best_weights=True
+                ),
+                keras.callbacks.ModelCheckpoint(
+                    "best_model_temp.keras",  # Temporary file
+                    save_best_only=True,
+                    monitor='val_loss'
+                ),
+                keras.callbacks.TensorBoard(
+                    log_dir="logs/",
+                    histogram_freq=1  # Log weights every epoch
+                )]
+            
+            # Modified fit method with callback
+            self.model.fit(
+                X, y, 
+                batch_size=self.batch_size, 
+                epochs=epochs, 
+                verbose=1,
+                class_weight=class_weight_dict,
+                validation_data=(X_val, y_val),
+                callbacks=callbacks,
+            )
+            return self
+        
+        # Predict method for the model
+        def predict(self, X):
+            # Predict
+            probs = self.model.predict(X)
+            return np.argmax(probs, axis=-1)
+                
 
-                            # Compile the model
-                            model.compile(
-                                optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
-                                loss='categorical_crossentropy',
-                                metrics=metrics_
-                            )
-                            
-                            # Define the early stopping
-                            earlystopping = callbacks.EarlyStopping(
-                                    monitor="val_loss",
-                                    mode="min",
-                                    patience=5,
-                                    restore_best_weights=True)
+        def score(self, X, y):
+            y_pred = np.argmax(self.predict(X), axis=-1)
+            return balanced_accuracy_score(y, y_pred)
+    
+    class TrainingPlotter(keras.callbacks.Callback):
+        """
+        Persistent live plotter for training and validation metrics across epochs and hyperparameter trials.
+        """
+        # Static/global counter for hyperparameter trial ID
+        _global_run_id = 0  
 
-                            # Train the model
-                            model.fit(X_train_dl, y_train_dl, 
-                                      epochs=epochs, batch_size=batch_size, 
-                                      validation_data=(X_val_dl, y_val_dl),
-                                      verbose=2,  
-                                      callbacks=[earlystopping])
+        def __init__(self, validation_data=None):
+            """
+            Initialize the TrainingPlotter callback with validation data and tracking metrics.
+    
+            Args:
+                validation_data (tuple, optional): A tuple of (X_val, y_val) for validation tracking. Defaults to None.
+    
+            Attributes:
+                validation_data (tuple): Validation dataset for tracking model performance.
+                metrics (dict): Dictionary to track training and validation loss and accuracy.
+                best_epoch (int): Epoch with the best validation performance.
+                best_metrics (dict): Metrics from the best performing epoch.
+                run_id (int): Unique identifier for the current training run.
+            """
+            super().__init__()
+            self.validation_data = validation_data
+            self.metrics = {'loss': {'train': [], 'val': []}, 'accuracy': {'train': [], 'val': []}}
+            self.best_epoch = 0
+            self.best_metrics = {}
+            # Unique identifier for the current training run.
+            self.run_id = TrainingPlotter._global_run_id
+            TrainingPlotter._global_run_id += 1
 
-                            # Predict on the validation set
-                            y_pred = model.predict(X_val_dl)
-                            y_val_labels = np.argmax(y_val_dl, axis=1)
-                            y_pred_labels = np.argmax(y_pred, axis=1)    
+            # Create the plot once
+            self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2, figsize=(15, 6))
+            plt.ion()  # Enable interactive mode
 
-                            # Compute the balanced accuracy
-                            score = balanced_accuracy_score(y_val_labels, y_pred_labels)
-                            print(f"Params:\ndropout_rate={dropout_rate},\nlearning_rate={learning_rate},\nbatch_size={batch_size},\nBalanced Accuracy={score},\nepochs={epochs},\nneurons_1st_layer={neurons_1st},\nneurons_2nd_layer={neurons_2nd}")
+        def on_epoch_end(self, epoch, logs=None):
+            # Store metrics
+            for metric in ['loss', 'accuracy']:
+                self.metrics[metric]['train'].append(logs.get(metric))
+                self.metrics[metric]['val'].append(logs.get(f"val_{metric}"))
 
-                            # Update best parameters
-                            if score > best_score:
-                                best_score = score
-                                best_params = {'dropout_rate': dropout_rate, 
-                                               'learning_rate': learning_rate, 
-                                               'batch_size': batch_size,
-                                               "epochs": epochs,
-                                               'neurons_1st_layer': neurons_1st,
-                                               'neurons_2nd_layer': neurons_2nd}
+            # Track best val loss
+            val_loss = logs.get('val_loss')
+            if val_loss <= min(self.metrics['loss']['val']):
+                self.best_epoch = epoch
+                self.best_metrics = logs
 
+            # Update plots
+            self.ax1.clear()
+            self.ax2.clear()
+
+                        
+            # Visualizes the loss curves for both training and validation datasets,
+            self.ax1.plot(self.metrics['loss']['train'], label='Train Loss')
+            self.ax1.plot(self.metrics['loss']['val'], label='Val Loss')
+            self.ax1.axvline(self.best_epoch, linestyle='--', color='k')
+            self.ax1.set_title(f"Loss (Run {self.run_id})")
+            # Add a legend and identify the training and validation loss curves
+            self.ax1.legend()
+
+            self.ax2.plot(self.metrics['accuracy']['train'], label='Train Acc')
+            self.ax2.plot(self.metrics['accuracy']['val'], label='Val Acc')
+            self.ax2.axvline(self.best_epoch, linestyle='--', color='k')
+            self.ax2.set_title(f"Accuracy (Run {self.run_id})")
+            self.ax2.legend()
+
+            # Add a title to show the current epoch and the best epoch identified during training.
+            plt.suptitle(f"Epoch {epoch+1} | Best Epoch: {self.best_epoch+1}")
+    
+        def on_train_end(self, logs=None):
+            print(f"\n[Run {self.run_id}] Training complete — Best Epoch: {self.best_epoch+1}, Best Val Acc: {self.best_metrics.get('val_accuracy', 'N/A'):.4f}")
+
+            # Define the storage folder for the plots
+            plot_path = "training_plots/"
+            # Define the base folder
+            base_folder = "result_files/mlp_folder"
+            # Define the directory for the plots
+            plot_dir = os.path.join(base_folder, plot_path)
+            # Create the directory if it doesn't exist
+            if not os.path.exists(plot_dir):
+                os.makedirs(plot_dir)
+            # Save the plot
+            plt.savefig(os.path.join(plot_dir, f"training_plot_run_{self.run_id}.png"))
+
+            # Final pause to display, then close figure
+            # plt.pause(0.5)
+            plt.close(self.fig)
+    
+    # Define the KerasMLPW rapper
+    mlp = KerasMLP(hidden_layer_options=hidden_layer_options, seed=seed)
+
+        # BayesiansearchCV for hyperparameter optimization
+    opt = BayesSearchCV(
+        estimator=mlp,
+        search_spaces=search_space,
+        scoring={
+            "balanced_accuracy": make_scorer(balanced_accuracy_score),
+            # Macro for equal weight to each class
+            "precision": make_scorer(precision_score, average="macro"),
+            "recall": make_scorer(recall_score, average="macro"),
+            "f1": make_scorer(f1_score, average="macro")
+            },
+        n_iter=50,
+        cv=3,
+        n_jobs=1,
+        verbose=1,
+        refit="f1",
+        random_state=seed,
+    )
+    print(f"Optimizer: {opt}")
+
+    # Calculate class weights (place this right before opt.fit())
+    class_weights = compute_class_weight("balanced", classes=np.unique(y_train), y=y_train)
+    class_weight_dict = dict(enumerate(class_weights))
+    
+    # Fit the model
+    opt.fit(X_train, y_train)
+
+
+    # Define the best model
+    best_model = opt.best_estimator_
+    print(f"Best Model: {best_model}")
+    
+    # Make predictions on the validation set
+    y_pred = opt.predict(X_val)
+
+    # Evaluate the optimized model
+    print("Best parameters found:", opt.best_params_)
+    print("Best cross-validation score:", opt.best_score_)
+    print("Validation set Balanced Accuracy:", balanced_accuracy_score(y_val, y_pred))
+    
+    # Best parameters as dictionary
+    best_params: dict = dict(opt.best_params_)
+    # Replace the index with the actual hidden_layer_sizes tuple
+    best_params['hidden_layer_sizes'] = hidden_layer_options[opt.best_params_['hidden_layer_sizes']]
+
+    # Clean hidden_layer_sizes from the model
+    best_model.hidden_layer_sizes = best_params['hidden_layer_sizes']
+    best_model.hidden_layer_options = None
+
+    # Save the best params to a file
+    with open(str(best_params_path), "w") as f:
+        f.write(str(best_params))
+
+    # Calculate the duration of the optimization process
+    duration = timedelta(seconds = time.perf_counter() - start_time)
+    print(f"\nJob took: {duration}\n")
+
+    # Save the best model
+    best_model.model.save(best_model_path)
+    
     return best_params
 
 
 if __name__ == "__main__":
-    grid_search()
+    optimization()
+
+
+def test_model(X_test, y_test, best_model_path: str, num_classes: int, target_names: list[str]) -> None:
+    """
+    Evaluate the trained MLP model and generate diagnostic plots:
+    - Confusion Matrix
+    - ROC Curves (One-vs-Rest for multiclass)
+    - Class Prediction Distributions
+    """
+    # Load the model
+    model = keras.models.load_model(best_model_path)
+    
+    # Compile the model (ensure metrics are defined)
+    model.compile(
+        optimizer=model.optimizer,
+        loss=model.loss,
+        metrics=[
+            keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
+            keras.metrics.SparseTopKCategoricalAccuracy(k=2, name="top2_accuracy")
+        ]
+    )
+
+    # Evaluate
+    test_loss, test_acc, top2_acc = model.evaluate(X_test, y_test, verbose=0)
+    print(f"Test Accuracy: {test_acc:.4f}")
+    print(f"Top-2 Accuracy: {top2_acc:.4f}")
+    print(f"Test Loss: {test_loss:.4f}")
+
+
+    # Generate diagnostic plots
+    def plots(model, X_test, y_test, num_classes, target_classes=target_names):
+        """
+        Generate diagnostic plots for the MLP model:
+        - Confusion Matrix
+        - ROC Curves (One-vs-Rest for multiclass)
+        - Class Prediction Distributions
+        """
+        # Generate predictions
+        y_pred_probs = model.predict(X_test)
+        y_pred_classes = np.argmax(y_pred_probs, axis=-1)
+
+        # --- Plot 1: Confusion Matrix ---
+        cm = confusion_matrix(y_test, y_pred_classes)
+        plt.figure(figsize=(10, 8))
+        plt.imshow(cm, interpolation='nearest', cmap='Blues')
+        plt.colorbar()
+    
+        # Add value annotations
+        thresh = cm.max() / 2.
+        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+            plt.text(j, i, format(cm[i, j], 'd'),
+                    horizontalalignment="center",
+                    color="white" if cm[i, j] > thresh else "black")
+        
+        plt.xlabel("Predicted")
+        plt.ylabel("True")
+        plt.title("Confusion Matrix")
+        tick_marks = np.arange(len(target_classes))
+        plt.xticks(tick_marks, target_classes, rotation=45)
+        plt.yticks(tick_marks, target_classes, rotation=45)
+        plt.savefig("result_files/mlp_folder/confusion_matrix.png")
+        plt.close()
+
+        # --- Plot 2: ROC Curves (for multiclass) ---
+        if num_classes > 2:
+            # Binarize labels for ROC
+            y_test_bin = label_binarize(y_test, classes=np.arange(len(target_classes)))
+            fpr, tpr, roc_auc = {}, {}, {}
+
+            plt.figure(figsize=(10, 8))
+            for i, class_name in enumerate(target_classes):
+                fpr[i], tpr[i], _ = roc_curve(y_test_bin[:, i], y_pred_probs[:, i])
+                roc_auc[i] = auc(fpr[i], tpr[i])
+                plt.plot(fpr[i], tpr[i], label=f"{class_name} (AUC = {roc_auc[i]:.2f})")
+
+            plt.plot([0, 1], [0, 1], "k--")
+            plt.xlabel("False Positive Rate")
+            plt.ylabel("True Positive Rate")
+            plt.title("ROC Curves (One-vs-Rest)")
+            plt.legend()
+            plt.savefig("result_files/mlp_folder/roc_curves.png")
+            plt.close()
+
+        # --- Plot 3: Prediction Distribution per Class ---
+        plt.figure(figsize=(12, 6))
+        for class_id, class_name in enumerate(target_classes):
+            class_probs = y_pred_probs[y_test == class_id, class_id]
+            sns.kdeplot(class_probs, label=class_name, fill=True)
+
+        plt.xlabel("Predicted Probability for True Class")
+        plt.ylabel("Density")
+        plt.title("Prediction Confidence Distribution")
+        plt.legend()
+        plt.savefig("result_files/mlp_folder/prediction_distribution.png")
+        plt.close()
+
+        # --- Classification Report ---
+        print("\nClassification Report:")
+        # Define the classification report
+        class_report = classification_report(y_test, y_pred_classes, digits=2)
+        # Save the classification report to a file
+        with open("result_files/mlp_folder/classification_report.txt", "w") as f:
+            f.write(class_report)
+        # Print
+        print(class_report)
+
+        # --- Balanced Accuracy ---
+        balanced_acc = balanced_accuracy_score(y_test, y_pred_classes)
+        with open("result_files/mlp_folder/test_balanced_accuracy.txt", "w") as f:
+            f.write(f"Balanced Accuracy: {balanced_acc:.4f}")
+        print(f"Balanced Accuracy: {balanced_accuracy_score(y_test, y_pred_classes):.4f}")
+
+    plots(model=model, X_test=X_test, y_test=y_test, num_classes=num_classes)
+
+
+if __name__ == "__main__":
+    test_model()
