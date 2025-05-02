@@ -31,7 +31,8 @@ def main():
         rf_folder = config["RF_FOLDER"],
         mlp_results=config["MLP_RESULTS"], 
         best_params_path = config["BEST_PARAMS"],
-        epochs=config["EPOCHS"], 
+        epochs=config["EPOCHS"],
+        best_model_path=config["BEST_MODEL"],
         )
 
 
