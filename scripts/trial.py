@@ -128,14 +128,15 @@ def optimization(X_train, X_val, y_train, y_val,
                 TrainingPlotter(validation_data=(X_val, y_val)),
                 keras.callbacks.EarlyStopping(
                     monitor='val_loss',
-                    patience=5,
+                    patience=3,
                     restore_best_weights=True
                 ),
-                keras.callbacks.ModelCheckpoint(
-                    "best_model_temp.keras",  # Temporary file
-                    save_best_only=True,
-                    monitor='val_loss'
-                )]
+                # keras.callbacks.ModelCheckpoint(
+                #     "best_model_temp.keras",  # Temporary file
+                #     save_best_only=True,
+                #     monitor='val_loss'
+                # )
+                ]
             
             # Modified fit method with callback
             self.model.fit(
@@ -210,8 +211,7 @@ def optimization(X_train, X_val, y_train, y_val,
             # Update plots
             self.ax1.clear()
             self.ax2.clear()
-
-                        
+   
             # Visualizes the loss curves for both training and validation datasets,
             self.ax1.plot(self.metrics['loss']['train'], label='Train Loss')
             self.ax1.plot(self.metrics['loss']['val'], label='Val Loss')
@@ -251,7 +251,7 @@ def optimization(X_train, X_val, y_train, y_val,
     # Define the KerasMLPW rapper
     mlp = KerasMLP(hidden_layer_options=hidden_layer_options, seed=seed)
 
-        # BayesiansearchCV for hyperparameter optimization
+    # BayesiansearchCV for hyperparameter optimization
     opt = BayesSearchCV(
         estimator=mlp,
         search_spaces=search_space,
@@ -271,7 +271,7 @@ def optimization(X_train, X_val, y_train, y_val,
     )
     print(f"Optimizer: {opt}")
 
-    # Calculate class weights (place this right before opt.fit())
+    # Calculate class weights
     class_weights = compute_class_weight("balanced", classes=np.unique(y_train), y=y_train)
     class_weight_dict = dict(enumerate(class_weights))
     
@@ -311,11 +311,12 @@ def optimization(X_train, X_val, y_train, y_val,
     # Save the best model
     best_model.model.save(best_model_path)
     
-    return best_params
+    return best_params, best_model
 
 
 if __name__ == "__main__":
     optimization()
+
 
 
 def test_model(X_test, y_test, best_model_path: str, num_classes: int, target_names: list[str]) -> None:
@@ -327,8 +328,8 @@ def test_model(X_test, y_test, best_model_path: str, num_classes: int, target_na
     """
     # Load the model
     model = keras.models.load_model(best_model_path)
-    
-    # Compile the model (ensure metrics are defined)
+
+    # Compile the model
     model.compile(
         optimizer=model.optimizer,
         loss=model.loss,
@@ -343,6 +344,41 @@ def test_model(X_test, y_test, best_model_path: str, num_classes: int, target_na
     print(f"Test Accuracy: {test_acc:.4f}")
     print(f"Top-2 Accuracy: {top2_acc:.4f}")
     print(f"Test Loss: {test_loss:.4f}")
+
+    predictions = model.predict(X_test)
+
+    # Reduce dimensionality for visualization (UMAP/t-SNE)
+    import umap  # pip install umap-learn
+    reducer = umap.UMAP(random_state=42)
+    embeddings = reducer.fit_transform(predictions)
+    
+    # Plot class separation
+    plt.figure(figsize=(10, 6))
+    for i, class_name in enumerate(target_names):
+        plt.scatter(embeddings[y_test == i, 0], embeddings[y_test == i, 1], 
+                    label=class_name, alpha=0.6)
+    plt.title("Feature Space Visualization (Last Hidden Layer)")
+    plt.xlabel("UMAP 1")
+    plt.ylabel("UMAP 2")
+    plt.legend()
+    plt.savefig("result_files/mlp_folder/feature_space_separation.png")
+    plt.close()
+    # Class-wise mean distance analysis
+    from sklearn.metrics import pairwise_distances
+    class_means = [np.mean(predictions[y_test == i], axis=0) for i in range(len(target_names))]
+    
+    # Create an empty dictionary
+    mean_dist = {}
+    # Define the distance matrix
+    distance_matrix = pairwise_distances(class_means)
+    # Iterate over the distance matrix
+    for i, row in enumerate(distance_matrix):
+        # Add the means to the dictionary
+        mean_dist[target_names[i]] = format(np.mean(np.delete(row, i)), ".4f")
+    # Save the mean distances to a file
+    with open("result_files/mlp_folder/class_feature_space_distances.txt", "w") as f:
+        f.write(str(mean_dist))
+        
 
 
     # Generate diagnostic plots
