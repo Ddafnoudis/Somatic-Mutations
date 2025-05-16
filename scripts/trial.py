@@ -135,10 +135,6 @@ def optimization(X_train, X_val, y_train, y_val,
                     "best_model_temp.keras",  # Temporary file
                     save_best_only=True,
                     monitor='val_loss'
-                ),
-                keras.callbacks.TensorBoard(
-                    log_dir="logs/",
-                    histogram_freq=1  # Log weights every epoch
                 )]
             
             # Modified fit method with callback
@@ -194,9 +190,10 @@ def optimization(X_train, X_val, y_train, y_val,
             self.run_id = TrainingPlotter._global_run_id
             TrainingPlotter._global_run_id += 1
 
-            # Create the plot once
+            # Create the plot
             self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2, figsize=(15, 6))
-            plt.ion()  # Enable interactive mode
+            # Enable interactive mode
+            plt.ion()  
 
         def on_epoch_end(self, epoch, logs=None):
             # Store metrics
