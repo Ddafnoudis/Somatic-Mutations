@@ -399,34 +399,41 @@ def test_model(X_test, y_test, best_model_path: str, num_classes: int, target_na
             plt.savefig("result_files/mlp_folder/roc_curves.png")
             plt.close()
 
-        # --- Plot 3: Prediction Distribution per Class ---
+         # --- Plot 3: Prediction Confidence Distribution ---
         plt.figure(figsize=(12, 6))
-        for class_id, class_name in enumerate(target_classes):
-            class_probs = y_pred_probs[y_test == class_id, class_id]
-            sns.kdeplot(class_probs, label=class_name, fill=True)
+        for class_id, class_name in enumerate(target_names):
+            # Get probabilities assigned to the true class
+            true_class_probs = y_pred_probs[y_test == class_id, class_id]
+            
+            # Safety check: Ensure probabilities are valid
+            if np.any(true_class_probs < 0) or np.any(true_class_probs > 1):
+                true_class_probs = np.clip(true_class_probs, 0.0, 1.0)
+            
+            # Plot distribution
+            sns.kdeplot(true_class_probs, label=class_name, fill=True, alpha=0.5)
 
         plt.xlabel("Predicted Probability for True Class")
         plt.ylabel("Density")
         plt.title("Prediction Confidence Distribution")
+        # Explicitly enforce valid probability range
+        plt.xlim(0, 1)  
         plt.legend()
+        plt.tight_layout()
         plt.savefig("result_files/mlp_folder/prediction_distribution.png")
         plt.close()
 
         # --- Classification Report ---
         print("\nClassification Report:")
-        # Define the classification report
-        class_report = classification_report(y_test, y_pred_classes, digits=2)
-        # Save the classification report to a file
+        report = classification_report(y_test, y_pred_classes, target_names=target_names, digits=2)
+        print(report)
         with open("result_files/mlp_folder/classification_report.txt", "w") as f:
-            f.write(class_report)
-        # Print
-        print(class_report)
+            f.write(report)
 
         # --- Balanced Accuracy ---
         balanced_acc = balanced_accuracy_score(y_test, y_pred_classes)
+        print(f"Balanced Accuracy: {balanced_acc:.4f}")
         with open("result_files/mlp_folder/test_balanced_accuracy.txt", "w") as f:
             f.write(f"Balanced Accuracy: {balanced_acc:.4f}")
-        print(f"Balanced Accuracy: {balanced_accuracy_score(y_test, y_pred_classes):.4f}")
 
     plots(model=model, X_test=X_test, y_test=y_test, num_classes=num_classes)
 
